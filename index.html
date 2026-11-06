@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Автоучёт</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap"
+    rel="stylesheet">
+  <script src="firebase-config.js"></script>
+  <style>
+    :root {
+      --navy: #0f1b3d;
+      --blue: #2f64c8;
+      --red: #c7321f;
+      --bg: #e9ecf2;
+      --ink: #111a2e;
+      --muted: #6b7690;
+      --line: #dde2ec;
+      --redbg: #fbe4e1;
+      --bluebg: #e4ecfb;
+      --green: #1f8a4c;
+      --head: 'Barlow Condensed', sans-serif;
+      --body: 'Inter', sans-serif;
+      --mono: 'JetBrains Mono', monospace
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0
+    }
+
+    html,
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font: 400 14px/1.45 var(--body)
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0;
+      background: none;
+      color: inherit
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: var(--head);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .01em
+    }
+
+    .mono {
+      font-family: var(--mono)
+    }
+
+    .page {
+      animation: pageIn .35s ease both
+    }
+
+    @keyframes pageIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px)
+      }
+    }
+
+    body.noanim * {
+      animation: none !important;
+      transition: none !important
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        animation: none !important;
+        transition: none !important
+      }
+    }
+
+    /* forms */
+    .field {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 0;
+      margin-bottom: 12px;
+      position: relative
+    }
+
+    .field label {
+      display: block;
+      font: 600 11px var(--body);
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 0;
+      font: 500 16px var(--body);
+      padding: 6px 28px 6px 0;
+      background: none;
+      outline: none
+    }
+
+    .field .ok {
+      position: absolute;
+      right: 0;
+      bottom: 12px;
+      color: var(--blue);
+      opacity: 0;
+      transition: .2s
+    }
+
+    .field.valid .ok {
+      opacity: 1
+    }
+
+    .field.bad {
+      border-color: var(--red)
+    }
+
+    .err {
+      color: var(--red);
+      font-size: 13px;
+      min-height: 20px;
+      margin: 4px 0
+    }
+
+    .row {
+      display: flex;
+      gap: 12px
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 30px;
+      font-weight: 600;
+      text-align: center;
+      transition: transform .15s
+    }
+
+    .btn:active {
+      transform: scale(.97)
+    }
+
+    .btn.primary {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(47, 100, 200, .3)
+    }
+
+    .sheet #go {
+      flex: 0 0 auto;
+      width: 100%;
+      min-height: 52px;
+      padding: 14px 20px;
+      border-radius: 16px;
+    }
+
+    .btn.ghost {
+      border: 1px solid var(--blue);
+      color: var(--blue)
+    }
+
+    .btn.danger {
+      background: var(--red);
+      color: #fff
+    }
+
+    .btn.loading {
+      opacity: .6;
+      pointer-events: none
+    }
+
+    .sq {
+      padding: 13px 16px;
+      font: 700 17px var(--head);
+      text-transform: uppercase;
+      background: var(--blue);
+      color: #fff
+    }
+
+    .sq.r {
+      background: var(--red)
+    }
+
+    .sq.d {
+      background: var(--navy)
+    }
+
+    /* auth */
+    .auth {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      min-height: 100vh
+    }
+
+    .hero {
+      position: relative;
+      background: #030a2a url(assets/bmw.jpg) 50% 55%/cover;
+      color: #fff;
+      overflow: hidden;
+      min-height: 260px
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(3, 10, 42, .55), transparent 35%, rgba(3, 10, 42, .7))
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(120, 170, 255, .16) 50%, transparent 60%);
+      transform: translateX(-120%);
+      animation: sweep 5s .8s ease-in-out infinite
+    }
+
+    @keyframes sweep {
+      to {
+        transform: translateX(120%)
+      }
+    }
+
+    .hero .tx {
+      position: absolute;
+      left: 32px;
+      right: 32px;
+      bottom: 32px;
+      z-index: 2
+    }
+
+    .hero .tx h1 {
+      font-size: 44px;
+      line-height: 1
+    }
+
+    .hero .tx p {
+      color: #b9c9ee;
+      margin-top: 6px;
+      max-width: 420px
+    }
+
+    .hero .lg {
+      position: absolute;
+      left: 32px;
+      top: 28px;
+      z-index: 2;
+      font: 600 13px var(--mono);
+      letter-spacing: .3em
+    }
+
+    .sheet {
+      background: #fff;
+      padding: 48px 8%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center
+    }
+
+    .sheet h2 {
+      font-size: 38px;
+      line-height: 1
+    }
+
+    .sheet>p {
+      color: var(--muted);
+      margin: 6px 0 20px
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid var(--line);
+      margin-bottom: 18px
+    }
+
+    .tabs button {
+      flex: 1;
+      padding: 10px;
+      font: 700 18px var(--head);
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px
+    }
+
+    .tabs button.on {
+      color: var(--blue);
+      border-color: var(--blue)
+    }
+
+    .check {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 10px 0 22px
+    }
+
+    .demo {
+      margin-top: 18px;
+      font: 500 11px var(--mono);
+      color: var(--muted)
+    }
+
+    @media(max-width:899px) {
+      .auth {
+        display: block
+      }
+
+      .hero {
+        height: 280px
+      }
+
+      .hero .tx h1 {
+        font-size: 30px
+      }
+
+      .hero .tx {
+        bottom: 56px
+      }
+
+      .sheet {
+        margin-top: -36px;
+        border-radius: 32px 32px 0 0;
+        position: relative;
+        padding: 28px 24px 40px;
+        min-height: auto
+      }
+    }
+
+    /* shell */
+    .shell {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh
+    }
+
+    .side {
+      background: var(--navy);
+      color: #fff;
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: sticky;
+      top: 0;
+      height: 100vh
+    }
+
+    .brand {
+      padding: 4px 12px 20px
+    }
+
+    .brand h1 {
+      font-size: 26px;
+      line-height: 1
+    }
+
+    .brand small {
+      font: 500 10px var(--mono);
+      color: #9fb0d8
+    }
+
+    .side button {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      font: 700 17px var(--head);
+      text-transform: uppercase;
+      color: #9fb0d8;
+      text-align: left;
+      border-left: 3px solid transparent;
+      transition: .15s
+    }
+
+    .side button:hover {
+      color: #fff
+    }
+
+    .side button.on {
+      background: #1e2d5a;
+      color: #fff;
+      border-color: var(--blue)
+    }
+
+    .side .logout {
+      margin-top: auto
+    }
+
+    main {
+      padding: 24px 32px 48px;
+      width: 100%;
+      max-width: 1240px
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px
+    }
+
+    .bar h1 {
+      font-size: 34px;
+      line-height: 1
+    }
+
+    .bar .who {
+      font: 500 11px var(--mono);
+      color: var(--muted);
+      text-align: right
+    }
+
+    @media(max-width:899px) {
+      .shell {
+        display: block
+      }
+
+      .side {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: auto;
+        flex-direction: row;
+        padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+        z-index: 5;
+        border-top: 3px solid var(--blue)
+      }
+
+      .side .brand,
+      .side .logout {
+        display: none
+      }
+
+      .side button {
+        flex: 1;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 12px;
+        justify-content: center;
+        border-left: 0;
+        padding: 6px 0
+      }
+
+      .side button.on {
+        background: none
+      }
+
+      main {
+        padding: calc(14px + env(safe-area-inset-top)) 16px 96px
+      }
+
+      .bar h1 {
+        font-size: 28px
+      }
+    }
+
+    /* fleet */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line)
+    }
+
+    .kpi {
+      background: #fff;
+      padding: 14px 16px
+    }
+
+    .kpi span {
+      display: block;
+      font: 700 15px var(--head);
+      text-transform: uppercase;
+      color: var(--muted)
+    }
+
+    .kpi strong {
+      font: 700 40px/1.1 var(--head)
+    }
+
+    .kpi em {
+      font: 600 12px var(--mono);
+      margin-left: 6px;
+      color: var(--muted);
+      font-style: normal
+    }
+
+    .kpi i {
+      display: block;
+      height: 4px;
+      background: var(--line);
+      margin-top: 8px
+    }
+
+    .kpi i::before {
+      content: "";
+      display: block;
+      height: 100%;
+      width: var(--w);
+      background: var(--blue);
+      transform-origin: left;
+      animation: grow 1s .3s ease both
+    }
+
+    @keyframes grow {
+      from {
+        transform: scaleX(0)
+      }
+    }
+
+    .kpi.alert {
+      background: var(--redbg)
+    }
+
+    .kpi.alert strong,
+    .kpi.alert span {
+      color: var(--red)
+    }
+
+    .kpi.alert i::before {
+      background: var(--red)
+    }
+
+    .tools {
+      display: flex;
+      gap: 10px;
+      margin: 16px 0 10px;
+      flex-wrap: wrap
+    }
+
+    .search {
+      flex: 1;
+      min-width: 220px;
+      background: #fff;
+      border: 1px solid var(--line)
+    }
+
+    .search input {
+      width: 100%;
+      border: 0;
+      padding: 12px;
+      font: 500 13px var(--body);
+      background: none;
+      outline: none
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      overflow-x: auto
+    }
+
+    .chip {
+      padding: 8px 14px;
+      font: 700 15px var(--head);
+      text-transform: uppercase;
+      background: #fff;
+      border: 1px solid var(--line);
+      white-space: nowrap
+    }
+
+    .chip.on {
+      background: var(--navy);
+      color: #fff;
+      border-color: var(--navy)
+    }
+
+    .chip small {
+      font: 600 10px var(--mono);
+      margin-left: 6px;
+      background: var(--blue);
+      color: #fff;
+      padding: 1px 5px
+    }
+
+    .list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 12px
+    }
+
+    @media(max-width:899px) {
+      .kpis {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .list {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .veh {
+      background: #fff;
+      border-left: 5px solid var(--blue);
+      padding: 14px;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+      animation: rise .4s both;
+      animation-delay: calc(var(--i)*50ms);
+      text-align: left;
+      width: 100%;
+      display: block
+    }
+
+    .veh:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(15, 27, 61, .12)
+    }
+
+    .veh.err,
+    .veh.warn {
+      border-left-color: var(--red)
+    }
+
+    .veh.way {
+      border-left-color: #8fb0ec
+    }
+
+    .veh.new {
+      border-left-color: #aab4cc
+    }
+
+    .veh .hd {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: flex-start
+    }
+
+    .veh h3 {
+      font-size: 24px;
+      line-height: 1.05
+    }
+
+    .veh h3 small {
+      font: 600 12px var(--mono);
+      color: var(--muted);
+      margin-left: 6px
+    }
+
+    .tag {
+      font: 700 12px var(--head);
+      text-transform: uppercase;
+      padding: 3px 8px;
+      white-space: nowrap;
+      letter-spacing: .03em
+    }
+
+    .tag.red {
+      color: var(--red);
+      background: var(--redbg);
+      border: 1px solid #f0b9b2
+    }
+
+    .tag.blue {
+      color: var(--blue);
+      background: var(--bluebg)
+    }
+
+    .sector {
+      margin: 6px 0;
+      font: 500 11px var(--mono);
+      color: var(--muted)
+    }
+
+    .vin {
+      font: 700 15px var(--mono);
+      letter-spacing: .04em;
+      word-break: break-all
+    }
+
+    .vin b {
+      color: var(--blue)
+    }
+
+    .vin u {
+      text-decoration: none;
+      background: var(--redbg);
+      color: var(--red);
+      padding: 0 4px
+    }
+
+    .note {
+      margin-top: 10px;
+      background: var(--redbg);
+      color: var(--red);
+      padding: 10px;
+      font-size: 12.5px;
+      border: 1px solid #f0b9b2
+    }
+
+    .sub {
+      margin-top: 8px;
+      font-size: 12.5px;
+      color: var(--muted)
+    }
+
+    body.compact .veh .note,
+    body.compact .veh .sub {
+      display: none
+    }
+
+    .empty {
+      grid-column: 1/-1;
+      padding: 48px 16px;
+      text-align: center;
+      color: var(--muted);
+      background: #fff
+    }
+
+    /* vehicle */
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start
+    }
+
+    @media(max-width:899px) {
+      .cols {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .panel {
+      background: #fff;
+      padding: 18px;
+      margin-bottom: 16px
+    }
+
+    .panel h2 {
+      font-size: 30px;
+      line-height: 1
+    }
+
+    .vinbox {
+      background: var(--navy);
+      color: #fff;
+      padding: 14px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px
+    }
+
+    .vinbox .mono {
+      font-size: 15px;
+      letter-spacing: .06em;
+      font-weight: 700;
+      word-break: break-all
+    }
+
+    .vinbox button {
+      background: var(--blue);
+      padding: 10px 12px;
+      color: #fff
+    }
+
+    .vinbox button.done {
+      background: var(--green)
+    }
+
+    .carimg {
+      height: 200px;
+      margin-top: 12px;
+      background: #030a2a url(assets/bmw.jpg) 50% 60%/cover
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      margin-top: 12px
+    }
+
+    .grid2>div {
+      background: #fff;
+      padding: 10px 10px 10px 0
+    }
+
+    .grid2 span {
+      display: block;
+      font: 600 10px var(--mono);
+      color: var(--muted);
+      text-transform: uppercase
+    }
+
+    .grid2 b {
+      font-weight: 600
+    }
+
+    .acts {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px
+    }
+
+    .entry {
+      border: 1px solid var(--line);
+      padding: 12px;
+      margin-top: 10px;
+      animation: rise .4s both;
+      animation-delay: calc(var(--i)*60ms)
+    }
+
+    .entry .n {
+      font: 700 11px var(--mono);
+      background: var(--blue);
+      color: #fff;
+      padding: 1px 6px
+    }
+
+    .entry h3 {
+      font-size: 20px;
+      margin: 6px 0 2px
+    }
+
+    .entry p {
+      font-size: 12.5px;
+      color: var(--muted)
+    }
+
+    .back {
+      font: 600 13px var(--mono);
+      color: var(--blue);
+      margin-bottom: 12px;
+      padding: 4px 0
+    }
+
+    /* profile */
+    .set {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .set small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .sw {
+      position: relative;
+      width: 46px;
+      height: 26px;
+      background: #c3cadb;
+      border-radius: 20px;
+      transition: .2s;
+      flex: none
+    }
+
+    .sw::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      transition: .2s
+    }
+
+    .sw[aria-checked=true] {
+      background: var(--blue)
+    }
+
+    .sw[aria-checked=true]::after {
+      left: 23px
+    }
+
+    /* overlays */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 10, 30, .6);
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      animation: pageIn .2s both
+    }
+
+    .mbox {
+      background: #fff;
+      width: min(460px, 100%);
+      padding: 24px;
+      max-height: 92vh;
+      overflow: auto
+    }
+
+    .mbox h2 {
+      font-size: 28px;
+      margin-bottom: 10px
+    }
+
+    .scan {
+      position: fixed;
+      inset: 0;
+      background: #05080f;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      animation: pageIn .25s both
+    }
+
+    .frame {
+      width: min(380px, 90vw);
+      height: 220px;
+      position: relative
+    }
+
+    .frame::before,
+    .frame::after {
+      content: "";
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border: 3px solid #5b8cf0
+    }
+
+    .frame::before {
+      left: 0;
+      top: 0;
+      border-right: 0;
+      border-bottom: 0
+    }
+
+    .frame::after {
+      right: 0;
+      bottom: 0;
+      border-left: 0;
+      border-top: 0;
+      border-color: var(--red)
+    }
+
+    .beam {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      height: 2px;
+      background: var(--red);
+      box-shadow: 0 0 14px var(--red);
+      animation: beam 1.4s ease-in-out infinite alternate
+    }
+
+    @keyframes beam {
+      from {
+        top: 8%
+      }
+
+      to {
+        top: 92%
+      }
+    }
+
+    .scan form {
+      position: absolute;
+      bottom: 10%;
+      width: min(380px, 90vw);
+      display: grid;
+      gap: 10px
+    }
+
+    .scan input {
+      padding: 14px;
+      font: 700 16px var(--mono);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      border: 1px solid #2a3a66;
+      background: #0b1430;
+      color: #fff;
+      outline: none
+    }
+
+    .scan .e {
+      color: #ff8b7d;
+      font-size: 13px;
+      min-height: 18px
+    }
+
+    .scan .x {
+      position: absolute;
+      top: calc(16px + env(safe-area-inset-top));
+      right: 16px;
+      color: #fff;
+      font-size: 26px
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 18px;
+      z-index: 40;
+      font: 500 12px var(--mono);
+      animation: pageIn .25s both
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module">
+    /* =====================================================================
+       ДАННЫЕ. Два бэкенда с одним интерфейсом:
+       • firebase  — если в firebase-config.js есть ключи (Auth + Firestore)
+       • demo      — иначе, всё хранится в localStorage браузера
+       Остальной код про бэкенд ничего не знает: он зовёт только B.*
+       ===================================================================== */
+    const DEF = { notify: true, autocapture: true, compact: false, anim: true };
+    const LS = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d } catch { return d } };
+    const put = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+    const stamp = () => new Date().toLocaleString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const SEED = [
+      { vin: 'JTHBC11A9P2084921', model: 'Lexus RX 350 AWD', year: 2024, sector: 'A-04 · Стоянка 2', status: 'err', note: 'Не совпадает цвет в ПТС: заявлен Чёрный металлик, факт: Графит металлик.', km: 14, color: 'Графит металлик', retail: 8950000, journal: [{ n: 1, t: 'Приёмка с автовоза', p: 'ТТН #8841-P', d: '23 окт 2024, 19:40', by: 'Система' }] },
+      { vin: '1GNSKCKC4P1194028', model: 'Chevrolet Tahoe RST', year: 2023, sector: 'Шоурум · Подиум 1', status: 'ok', note: 'Сверено инспектором.', km: 120, color: 'Белый', retail: 9400000, journal: [] },
+      { vin: 'WBAJU0108NCF98213', model: 'BMW X5 M Competition', year: 2024, sector: 'B-12 · Транзитная зона', status: 'warn', note: 'Нет на парковочном месте более 4 часов. Идёт поиск по камерам КПП-1/КПП-2.', km: 0, color: 'Чёрный сапфир', retail: 14200000, journal: [] },
+      { vin: 'JTJBA7AJ6R4019552', model: 'Lexus LX 600 VIP', year: 2024, sector: 'В пути: ЦОП → Север', status: 'way', note: 'Автовоз #74, прибытие ~18:00.', km: 35, color: 'Чёрный', retail: 19800000, journal: [] }];
+    let me = null;
+    const pub = u => ({ uid: u.uid, name: u.name, email: u.email, settings: { ...DEF, ...u.settings } });
+
+    const demo = {
+      mode: 'demo',
+      async init() { if (!LS('au_veh')) put('au_veh', SEED); me = LS('au_session', null) },
+      async register(name, email, pass) {
+        const us = LS('au_users', []); if (us.some(u => u.email === email)) throw { code: 'auth/email-already-in-use' };
+        const u = { uid: 'u' + Date.now(), name, email, pass, settings: DEF }; put('au_users', [...us, u]); me = pub(u); put('au_session', me)
+      },
+      async login(email, pass) { const u = LS('au_users', []).find(u => u.email === email && u.pass === pass); if (!u) throw { code: 'auth/invalid-credential' }; me = pub(u); put('au_session', me) },
+      async logout() { me = null; localStorage.removeItem('au_session') },
+      async setSettings(s) { me.settings = s; put('au_session', me); put('au_users', LS('au_users', []).map(u => u.uid === me.uid ? { ...u, settings: s } : u)) },
+      async list() { return LS('au_veh', []) },
+      async save(v) { const l = LS('au_veh', []); put('au_veh', l.some(x => x.vin === v.vin) ? l.map(x => x.vin === v.vin ? v : x) : [v, ...l]) }
+    };
+
+    const firebase = {
+      mode: 'firebase',
+      async init() {
+        const U = 'https://www.gstatic.com/firebasejs/10.14.1/';
+        const [{ initializeApp }, A, F] = await Promise.all([import(U + 'firebase-app.js'), import(U + 'firebase-auth.js'), import(U + 'firebase-firestore.js')]);
+        this.A = A; this.F = F; const app = initializeApp(window.FIREBASE_CONFIG); this.auth = A.getAuth(app); this.db = F.getFirestore(app);
+        await new Promise(r => A.onAuthStateChanged(this.auth, async u => { me = u ? await this.profile(u) : null; r() }));
+      },
+      async profile(u) {
+        const s = (await this.F.getDoc(this.F.doc(this.db, 'users', u.uid))).data() || {};
+        return pub({ uid: u.uid, email: u.email, name: s.name || u.displayName || u.email, settings: s.settings })
+      },
+      async register(name, email, pass) {
+        const c = await this.A.createUserWithEmailAndPassword(this.auth, email, pass);
+        await this.F.setDoc(this.F.doc(this.db, 'users', c.user.uid), { name, email, settings: DEF }); me = pub({ uid: c.user.uid, email, name })
+      },
+      async login(email, pass) { const c = await this.A.signInWithEmailAndPassword(this.auth, email, pass); me = await this.profile(c.user) },
+      async logout() { await this.A.signOut(this.auth); me = null },
+      async setSettings(s) { me.settings = s; await this.F.setDoc(this.F.doc(this.db, 'users', me.uid), { settings: s }, { merge: true }) },
+      async list() { return (await this.F.getDocs(this.F.collection(this.db, 'vehicles'))).docs.map(d => d.data()) },
+      async save(v) { await this.F.setDoc(this.F.doc(this.db, 'vehicles', v.vin), v) }
+    };
+
+    let B = demo;
+    if (window.FIREBASE_CONFIG) { try { B = firebase; await B.init() } catch (e) { console.error(e); B = demo; await B.init() } } else await B.init();
+
+    /* ============ helpers ============ */
+    const $ = (s, r = document) => r.querySelector(s), app = $('#app');
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const rub = n => n ? Number(n).toLocaleString('ru-RU') + ' ₽' : '—';
+    const TAG = { err: ['Расхождение', 'red'], ok: ['Совпало', 'blue'], warn: ['Недостача', 'red'], way: ['В пути', 'blue'], new: ['Не проверен', 'blue'] };
+    const vinHtml = v => `<span class="vin"><b>${esc(v.vin.slice(0, 9))}</b>${esc(v.vin.slice(9, 11))}<u>${esc(v.vin.slice(11))}</u></span>`;
+    const ERR = { 'auth/email-already-in-use': 'Эта почта уже зарегистрирована. Перейдите на вкладку «Вход».', 'auth/invalid-credential': 'Неверная почта или пароль.', 'auth/weak-password': 'Пароль слишком простой: нужно минимум 8 символов.', 'auth/network-request-failed': 'Нет соединения с сервером. Проверьте интернет.', 'auth/too-many-requests': 'Слишком много попыток. Подождите минуту.' };
+    window.go = p => location.hash = '#' + p;
+    function toast(t) { const e = document.createElement('div'); e.className = 'toast'; e.textContent = t; document.body.append(e); setTimeout(() => e.remove(), 2000) }
+    function countUp(el, to) { const t0 = performance.now(); (function f(t) { const k = Math.min((t - t0) / 800, 1); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f) })(t0) }
+    function applySettings() { const s = me?.settings || DEF; document.body.classList.toggle('compact', s.compact); document.body.classList.toggle('noanim', !s.anim) }
+    function modal(title, body, onOk, okText = 'Сохранить') {
+      const m = document.createElement('div'); m.className = 'modal';
+      m.innerHTML = `<form class="mbox"><h2>${title}</h2>${body}<div class="err"></div><div class="row"><button type="button" class="btn ghost" data-x>Отмена</button><button class="btn primary">${okText}</button></div></form>`;
+      document.body.append(m); const f = m.firstElementChild;
+      m.onclick = e => { if (e.target === m || e.target.hasAttribute('data-x')) m.remove() };
+      f.onsubmit = async e => { e.preventDefault(); try { await onOk(Object.fromEntries(new FormData(f))); m.remove() } catch (x) { $('.err', f).textContent = x.message || 'Ошибка' } };
+      $('input,select,textarea', m)?.focus();
+    }
+    const fld = (l, n, extra = '') => `<div class="field"><label>${l}</label><input name="${n}" ${extra}></div>`;
+    function shell(active, title, html) {
+      const nav = [['fleet', '🏢', 'Склад'], ['scan', '▥', 'VIN скан'], ['profile', '👤', 'Профиль']];
+      app.innerHTML = `<div class="shell"><aside class="side"><div class="brand"><h1>Автоучёт</h1><small>ПАРКОВЫЙ УЧЁТ · ${B.mode === 'demo' ? 'ДЕМО' : 'ONLINE'}</small></div>
+  ${nav.map(([k, i, l]) => `<button data-nav="${k}" class="${k === active ? 'on' : ''}"><span>${i}</span>${l}</button>`).join('')}
+  <button class="logout" id="out"><span>⎋</span>Выйти</button></aside>
+  <main class="page"><div class="bar"><h1>${title}</h1><div class="who">${esc(me.name)}<br>${esc(me.email)}</div></div>${html}</main></div>`;
+      document.querySelectorAll('[data-nav]').forEach(b => b.onclick = () => b.dataset.nav === 'scan' ? scanner() : go('/' + b.dataset.nav));
+      $('#out').onclick = async () => { await B.logout(); applySettings(); go('/login') };
+    }
+
+    /* ============ auth ============ */
+    function authPage() {
+      let mode = 'reg';
+      app.innerHTML = `<div class="auth page"><div class="hero"><div class="lg">АВТОУЧЁТ</div><div class="tx"><h1>Каждый автомобиль на учёте</h1><p>Склад, сверка по VIN и неизменяемый журнал событий в одной системе.</p></div></div>
+  <form class="sheet" id="f" novalidate><h2 id="h"></h2><p>Интеллектуальная система паркового учёта и сервиса</p>
+  <div class="tabs"><button type="button" data-m="reg">Регистрация</button><button type="button" data-m="in">Вход</button></div>
+  <div class="field" data-k="name"><label>Имя и фамилия</label><input name="name" autocomplete="name"><span class="ok">✓</span></div>
+  <div class="field" data-k="email"><label>Электронная почта</label><input name="email" type="email" autocomplete="email"><span class="ok">✓</span></div>
+  <div class="field" data-k="pass"><label>Пароль (от 8 символов)</label><input name="pass" type="password" autocomplete="current-password"><span class="ok">✓</span></div>
+  <div class="err" id="err"></div>
+  <label class="check" id="agw"><input type="checkbox" id="agree"> Я принимаю условия Правил и Конфиденциальности</label>
+  <button class="btn primary" id="go" style="width:100%"></button>
+  ${B.mode === 'demo' ? '<div class="demo">ДЕМО-РЕЖИМ: данные в браузере. Ключи Firebase — в firebase-config.js</div>' : ''}</form></div>`;
+      const rules = { name: v => v.trim().split(/\s+/).length >= 2, email: v => /^\S+@\S+\.\S+$/.test(v), pass: v => v.length >= 8 };
+      const draw = () => {
+        const r = mode === 'reg';
+        $('#h').textContent = r ? 'Создайте аккаунт' : 'С возвращением'; $('#go').textContent = r ? 'Зарегистрироваться' : 'Войти';
+        $('[data-k=name]').style.display = $('#agw').style.display = r ? '' : 'none'; $('#err').textContent = '';
+        document.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === mode))
+      };
+      document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; draw() });
+      document.querySelectorAll('.field input').forEach(i => i.oninput = () => { const f = i.closest('.field'); f.classList.toggle('valid', rules[f.dataset.k](i.value)); f.classList.remove('bad') });
+      $('#f').onsubmit = async e => {
+        e.preventDefault(); const f = e.target, r = mode === 'reg', keys = r ? ['name', 'email', 'pass'] : ['email', 'pass'], err = $('#err');
+        const bad = keys.filter(k => !rules[k](f[k].value));
+        document.querySelectorAll('.field').forEach(x => x.classList.toggle('bad', bad.includes(x.dataset.k)));
+        if (bad.length) { err.textContent = r ? 'Проверьте имя и фамилию, почту и пароль (от 8 символов).' : 'Введите почту и пароль.'; return }
+        if (r && !$('#agree').checked) { err.textContent = 'Примите условия, чтобы продолжить.'; return }
+        const b = $('#go'), t = b.textContent; b.classList.add('loading'); b.textContent = 'Подождите…'; err.textContent = '';
+        try { r ? await B.register(f.name.value.trim(), f.email.value.trim(), f.pass.value) : await B.login(f.email.value.trim(), f.pass.value); go('/fleet') }
+        catch (x) { err.textContent = ERR[x.code] || 'Не удалось выполнить. Попробуйте ещё раз.'; b.classList.remove('loading'); b.textContent = t }
+      };
+      draw();
+    }
+
+    /* ============ склад ============ */
+    async function fleetPage() {
+      const list = await B.list(); let filter = 'all', q = '';
+      const n = f => list.filter(f).length, pct = x => list.length ? Math.round(x / list.length * 100) + '%' : '0%';
+      const st = { total: list.length, ok: n(v => v.status === 'ok'), gap: n(v => v.status === 'err' || v.status === 'warn'), way: n(v => v.status === 'way') };
+      shell('fleet', 'Склад', `<div class="kpis">
+   <div class="kpi"><span>Всего на складе</span><strong data-n="${st.total}">0</strong><em>ТС</em><i style="--w:100%"></i></div>
+   <div class="kpi"><span>Проверено</span><strong data-n="${st.ok}">0</strong><em>ТС</em><i style="--w:${pct(st.ok)}"></i></div>
+   <div class="kpi alert"><span>Расхождения</span><strong data-n="${st.gap}">0</strong><em>шт</em><i style="--w:${pct(st.gap)}"></i></div>
+   <div class="kpi"><span>В пути</span><strong data-n="${st.way}">0</strong><em>ТС</em><i style="--w:${pct(st.way)}"></i></div></div>
+   <div class="tools"><div class="search"><input id="q" placeholder="Поиск: VIN, модель, сектор…" aria-label="Поиск"></div><button class="sq" id="add">+ Добавить ТС</button></div>
+   <div class="chips" id="chips"></div><div class="list" id="list"></div>`);
+      document.querySelectorAll('[data-n]').forEach(e => countUp(e, +e.dataset.n));
+      const chips = [['all', 'Все', () => true], ['todo', 'Не проверены', v => v.status === 'new' || v.status === 'way'], ['gap', 'Расхождения', v => v.status === 'err' || v.status === 'warn']];
+      const draw = () => {
+        const pass = chips.find(c => c[0] === filter)[2];
+        $('#chips').innerHTML = chips.map(([k, l, f]) => `<button class="chip ${k === filter ? 'on' : ''}" data-f="${k}">${l}<small>${n(f)}</small></button>`).join('');
+        const sh = list.filter(v => pass(v) && (v.vin + v.model + v.sector).toLowerCase().includes(q));
+        $('#list').innerHTML = sh.length ? sh.map((v, i) => {
+          const [tl, tc] = TAG[v.status] || TAG.new, bad = v.status === 'err' || v.status === 'warn';
+          return `<button class="veh ${v.status}" style="--i:${i}" data-open="${esc(v.vin)}"><div class="hd"><h3>${esc(v.model)}<small>${esc(v.year)}</small></h3><span class="tag ${tc}">${tl}</span></div>
+      <div class="sector">СЕКТОР: ${esc(v.sector)}</div>${vinHtml(v)}${v.note ? (bad ? `<div class="note">${esc(v.note)}</div>` : `<div class="sub">${esc(v.note)}</div>`) : ''}</button>`
+        }).join('')
+          : `<div class="empty">${list.length ? 'Ничего не найдено. Измените запрос или фильтр.' : 'На складе пока пусто. Нажмите «Добавить ТС».'}</div>`;
+        document.querySelectorAll('[data-open]').forEach(e => e.onclick = () => go('/vehicle/' + e.dataset.open));
+        document.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filter = b.dataset.f; draw() })
+      };
+      draw(); $('#q').oninput = e => { q = e.target.value.toLowerCase(); draw() }; $('#add').onclick = () => addVehicle();
+    }
+
+    function addVehicle(vin = '') {
+      modal('Новое ТС', fld('VIN (17 знаков)', 'vin', `value="${esc(vin)}" maxlength="17" style="text-transform:uppercase" required`) + fld('Модель', 'model', 'required placeholder="Lexus ES 250"') +
+        fld('Год', 'year', 'type="number" min="1990" max="2030" value="2024"') + fld('Сектор / слот', 'sector', 'placeholder="C-08"') + fld('Цвет', 'color') + fld('Цена, ₽', 'retail', 'type="number" min="0"'),
+        async d => {
+          d.vin = d.vin.trim().toUpperCase();
+          if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(d.vin)) throw Error('VIN: ровно 17 латинских букв и цифр, без I, O, Q.');
+          if ((await B.list()).some(v => v.vin === d.vin)) throw Error('ТС с таким VIN уже есть на складе.');
+          const v = {
+            vin: d.vin, model: d.model.trim(), year: +d.year, sector: d.sector || '—', color: d.color, retail: +d.retail || 0, km: 0, status: 'new', note: '',
+            journal: [{ n: 1, t: 'ТС добавлено в учёт', p: 'Первичная регистрация', d: stamp(), by: me.name }]
+          };
+          await B.save(v); toast('ТС добавлено'); go('/vehicle/' + v.vin); if (location.hash === '#/fleet') route()
+        }, 'Добавить');
+    }
+
+    /* ============ сканер ============ */
+    function scanner() {
+      const o = document.createElement('div'); o.className = 'scan';
+      o.innerHTML = `<button class="x" aria-label="Закрыть">✕</button><div class="frame"><div class="beam"></div></div>
+  <form><div class="e" id="se"></div><input id="sv" placeholder="Введите VIN или последние 7 знаков" autocomplete="off"><button class="btn primary">Найти</button></form>`;
+      document.body.append(o); $('.x', o).onclick = () => o.remove(); $('#sv').focus();
+      $('form', o).onsubmit = async e => {
+        e.preventDefault(); const q = $('#sv').value.trim().toUpperCase();
+        if (q.length < 5) { $('#se').textContent = 'Введите минимум 5 знаков VIN.'; return }
+        const hit = (await B.list()).find(v => v.vin.includes(q));
+        if (hit) { o.remove(); go('/vehicle/' + hit.vin) }
+        else if (q.length === 17) { o.remove(); addVehicle(q) }
+        else $('#se').textContent = 'Не найдено. Введите полный VIN (17 знаков), чтобы добавить ТС.'
+      };
+    }
+
+    /* ============ карточка ТС ============ */
+    async function vehiclePage(vin) {
+      const v = (await B.list()).find(x => x.vin === vin);
+      if (!v) { shell('fleet', 'Не найдено', '<div class="panel">ТС с таким VIN нет на складе.<div class="acts"><button class="sq" onclick="go(\'/fleet\')">К складу</button></div></div>'); return }
+      const [tl, tc] = TAG[v.status] || TAG.new, bad = v.status === 'err' || v.status === 'warn';
+      const log = (t, p) => { v.journal = [{ n: (v.journal[0]?.n || 0) + 1, t, p, d: stamp(), by: me.name }, ...v.journal] };
+      shell('fleet', 'Карточка ТС', `<button class="back" onclick="go('/fleet')">← К складу</button><div class="cols"><div>
+  <section class="panel"><div class="hd" style="display:flex;justify-content:space-between;gap:8px"><h2>${esc(v.model)}</h2><span class="tag ${tc}">${tl}</span></div>
+   <div class="vinbox"><span class="mono">${esc(v.vin)}</span><button id="copy" aria-label="Скопировать VIN">⧉</button></div><div class="carimg"></div>
+   <div class="grid2"><div><span>Год / пробег</span><b>${esc(v.year)} · ${esc(v.km ?? 0)} км</b></div><div><span>Сектор</span><b>${esc(v.sector)}</b></div>
+   <div><span>Цвет</span><b>${esc(v.color || '—')}</b></div><div><span>Цена</span><b>${rub(v.retail)}</b></div></div>
+   ${v.note ? `<div class="${bad ? 'note' : 'sub'}">${esc(v.note)}</div>` : ''}
+   <div class="acts"><button class="sq" id="okb">Подтвердить совпадение</button><button class="sq r" id="badb">Зафиксировать расхождение</button></div></section></div>
+  <section class="panel"><h2>Журнал событий</h2><p class="sub">Новые записи добавляются сверху, прежние не редактируются.</p>
+   ${v.journal.map((e, i) => `<div class="entry" style="--i:${i}"><span class="n">#${String(e.n).padStart(4, '0')}</span><h3>${esc(e.t)}</h3><p class="mono" style="font-size:11px">${esc(e.d)} · ${esc(e.by || '')}</p><p style="margin-top:6px;color:var(--ink)">${esc(e.p)}</p></div>`).join('') || '<div class="sub">Записей пока нет.</div>'}
+   <div class="acts"><button class="sq d" id="newb">+ Новая запись</button></div></section></div>`);
+      $('#copy').onclick = async e => { try { await navigator.clipboard.writeText(v.vin) } catch { } const b = e.currentTarget; b.textContent = '✓'; b.classList.add('done'); setTimeout(() => { b.textContent = '⧉'; b.classList.remove('done') }, 1200) };
+      $('#okb').onclick = async () => { v.status = 'ok'; v.note = 'Сверено: данные совпадают.'; log('Сверка: совпало', 'Данные учёта соответствуют факту'); await B.save(v); toast('Совпадение подтверждено'); route() };
+      $('#badb').onclick = () => modal('Расхождение', `<div class="field"><label>Тип</label><select name="kind"><option value="err">Данные не совпадают</option><option value="warn">Недостача (ТС не найдено)</option></select></div>` + fld('Описание', 'text', 'required placeholder="Что именно не совпадает"'),
+        async d => { v.status = d.kind; v.note = d.text; log(d.kind === 'warn' ? 'Недостача' : 'Расхождение данных', d.text); await B.save(v); toast('Расхождение зафиксировано'); route() }, 'Зафиксировать');
+      $('#newb').onclick = () => modal('Новая запись', `<div class="field"><label>Тип</label><select name="t"><option>Смена локации</option><option>Осмотр</option><option>Выдача клиенту</option><option>Сервис</option><option>Другое</option></select></div>` + fld('Комментарий', 'p', 'required'),
+        async d => { if (d.t === 'Смена локации') v.sector = d.p; log(d.t, d.p); await B.save(v); toast('Запись добавлена'); route() });
+    }
+
+    /* ============ профиль ============ */
+    function profilePage() {
+      const s = me.settings;
+      const rows = [['notify', 'Уведомления о расхождениях', 'Показывать тревоги по недостачам и ошибкам данных'], ['autocapture', 'Автозахват VIN', 'Сразу искать ТС после ввода 17 знаков'], ['compact', 'Компактный список', 'Скрывать заметки в карточках склада'], ['anim', 'Анимации', 'Отключите, если интерфейс кажется тяжёлым']];
+      shell('profile', 'Профиль', `<section class="panel"><h2>${esc(me.name)}</h2><p class="sub">${esc(me.email)} · режим данных: ${B.mode === 'demo' ? 'демо (браузер)' : 'Firebase'}</p></section>
+  <section class="panel"><h2>Настройки</h2>${rows.map(([k, t, d]) => `<div class="set"><div><b>${t}</b><small>${d}</small></div><button class="sw" role="switch" aria-checked="${!!s[k]}" aria-label="${t}" data-s="${k}"></button></div>`).join('')}</section>`);
+      document.querySelectorAll('[data-s]').forEach(b => b.onclick = async () => {
+        const k = b.dataset.s, ns = { ...me.settings, [k]: !me.settings[k] };
+        b.setAttribute('aria-checked', ns[k]); await B.setSettings(ns); applySettings()
+      });
+    }
+
+    /* ============ роутер ============ */
+    async function route() {
+      const p = location.hash.slice(1) || '/login';
+      if (!me && p !== '/login') return go('/login');
+      if (me && p === '/login') return go('/fleet');
+      applySettings();
+      if (p === '/login') authPage();
+      else if (p === '/fleet') await fleetPage();
+      else if (p === '/profile') profilePage();
+      else if (p.startsWith('/vehicle/')) await vehiclePage(decodeURIComponent(p.split('/')[2]));
+      else go('/fleet');
+    }
+    window.route = route; addEventListener('hashchange', route); route();
+  </script>
+  <script src="nav.js"></script>
+</body>
+
+</html>

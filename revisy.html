@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1b33">
+  <title>Акт расхождения — Автоучёт</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap&subset=cyrillic"
+    rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f1b33;
+      --navy-2: #16264a;
+      --blue: #2f63d1;
+      --blue-soft: #e6eefc;
+      --red: #c62828;
+      --red-dark: #a81f1f;
+      --red-soft: #fbe3e1;
+      --green: #1f8a4c;
+      --ink: #1b2436;
+      --muted: #6b7589;
+      --line: #dfe4ee;
+      --bg: #eef1f6;
+      --head: 'Oswald', sans-serif;
+      --body: 'Inter', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --nav-h: 64px;
+      --side-w: 248px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%
+    }
+
+    body {
+      font-family: var(--body);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      padding-bottom: calc(var(--nav-h) + 24px + env(safe-area-inset-bottom))
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0;
+      background: none;
+      color: inherit
+    }
+
+    input,
+    select {
+      font: inherit
+    }
+
+    svg {
+      width: 1em;
+      height: 1em;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    /* ---------- Шапка ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: linear-gradient(180deg, #3b4a63, #1d2b47);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      color: #fff;
+      flex: none
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, .12)
+    }
+
+    .icon-btn.box {
+      border: 1px solid rgba(255, 255, 255, .45);
+      font-size: 17px;
+      width: 34px;
+      height: 34px
+    }
+
+    .ttl {
+      flex: 1;
+      min-width: 0
+    }
+
+    .ttl h1 {
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 20px;
+      letter-spacing: .08em;
+      text-transform: uppercase
+    }
+
+    .ttl small {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      opacity: .8;
+      margin-top: 2px
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .user {
+      display: none
+    }
+
+    /* ---------- Боковое меню / нижнее меню ---------- */
+    .sidebar {
+      display: none
+    }
+
+    .bottom {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 30;
+      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: var(--navy);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border-top: 1px solid #2b3b63
+    }
+
+    .bottom a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: #8c9abb;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-decoration: none
+    }
+
+    .bottom a svg {
+      font-size: 22px
+    }
+
+    .bottom a.on {
+      color: #fff;
+      background: var(--navy-2);
+      box-shadow: inset 0 -3px 0 var(--blue)
+    }
+
+    /* ---------- Контент ---------- */
+    .page {
+      padding: 0 0 8px
+    }
+
+    .alert-banner {
+      margin: 12px;
+      padding: 14px;
+      background: #fdecea;
+      border: 1px solid #f1c3bf;
+      border-radius: 3px;
+      display: flex;
+      gap: 12px
+    }
+
+    .alert-banner .ico {
+      flex: none;
+      width: 30px;
+      height: 30px;
+      background: var(--red);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      border-radius: 3px;
+      font-size: 16px;
+      margin-top: 2px
+    }
+
+    .crit {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .crit b {
+      background: var(--red);
+      color: #fff;
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: .08em;
+      padding: 3px 8px;
+      border-radius: 2px
+    }
+
+    .crit span {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--red);
+      font-weight: 700
+    }
+
+    .alert-banner h2 {
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 1.2;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      margin-top: 8px
+    }
+
+    .alert-banner p {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: .04em;
+      color: #5a4a49;
+      margin-top: 8px;
+      line-height: 1.5
+    }
+
+    .panel {
+      margin: 12px;
+      background: #fff;
+      border: 1px solid #1b2436;
+      border-radius: 2px;
+      box-shadow: 3px 3px 0 #1b2436
+    }
+
+    .panel-h {
+      background: var(--navy);
+      color: #fff;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px
+    }
+
+    .panel-h h3 {
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      line-height: 1.15
+    }
+
+    .panel-h h3 svg {
+      font-size: 18px;
+      color: #ff8a80
+    }
+
+    .panel-h .sys {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      color: #7fa6ff;
+      letter-spacing: .06em;
+      text-align: right
+    }
+
+    .panel-h .cnt {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: #9fb8ec;
+      text-align: right;
+      line-height: 1.3
+    }
+
+    /* Объект аудита */
+    .subject {
+      padding: 14px
+    }
+
+    .subject .row1 {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px
+    }
+
+    .subject h4 {
+      font-family: var(--head);
+      font-weight: 700;
+      font-size: 23px;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+      line-height: 1.1
+    }
+
+    .pill {
+      flex: none;
+      background: var(--navy);
+      color: #fff;
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: .1em;
+      padding: 5px 10px;
+      text-transform: uppercase
+    }
+
+    .subject .meta {
+      margin-top: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .04em;
+      line-height: 1.5
+    }
+
+    .vinbox {
+      margin-top: 14px;
+      background: #f2f5fa;
+      border: 1px solid var(--line);
+      padding: 10px
+    }
+
+    .vin-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: .07em;
+      color: var(--muted);
+      text-transform: uppercase
+    }
+
+    .vin-top .bad {
+      color: var(--red);
+      font-weight: 700;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      text-align: right
+    }
+
+    .vin-cells {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr 1.6fr;
+      margin-top: 8px;
+      border: 1px solid #c9d1e0;
+      background: #fff
+    }
+
+    .vin-cells div {
+      padding: 6px 8px 10px;
+      text-align: center;
+      border-right: 1px solid #c9d1e0
+    }
+
+    .vin-cells div:last-child {
+      border-right: 0;
+      background: #f8d9d6
+    }
+
+    .vin-cells small {
+      display: block;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-align: left;
+      margin-bottom: 6px
+    }
+
+    .vin-cells b {
+      font-family: var(--mono);
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      color: var(--ink)
+    }
+
+    .vin-cells div:first-child b {
+      color: var(--blue)
+    }
+
+    .vin-cells div:last-child b {
+      color: var(--red)
+    }
+
+    .vin-cells div:last-child small {
+      color: var(--red)
+    }
+
+    /* Матрица */
+    .mrow {
+      border-bottom: 1px solid var(--line)
+    }
+
+    .mrow:last-child {
+      border-bottom: 0
+    }
+
+    .mrow.bad {
+      background: #fdf1f0
+    }
+
+    .mhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px 6px;
+      gap: 8px
+    }
+
+    .mhead .lbl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      color: #3a4660;
+      text-transform: uppercase
+    }
+
+    .mhead .lbl svg {
+      font-size: 15px;
+      color: var(--muted)
+    }
+
+    .chip {
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      white-space: nowrap
+    }
+
+    .chip.fill {
+      background: var(--red);
+      color: #fff
+    }
+
+    .chip.line {
+      border: 1px solid var(--red);
+      color: var(--red)
+    }
+
+    .chip.info {
+      background: var(--blue-soft);
+      color: var(--blue)
+    }
+
+    .mcells {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 0 10px 12px
+    }
+
+    .mcell {
+      background: #fff;
+      padding: 8px 10px;
+      border: 1px solid #edf0f6
+    }
+
+    .mcell small {
+      display: block;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: .06em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 5px
+    }
+
+    .mcell strong {
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 19px;
+      line-height: 1.2;
+      letter-spacing: .02em;
+      display: flex;
+      gap: 6px;
+      align-items: center
+    }
+
+    .mcell.exp strong {
+      color: var(--ink)
+    }
+
+    .mcell.exp.blue strong {
+      color: var(--blue)
+    }
+
+    .mcell.act.bad {
+      border-color: #f3cfcb;
+      background: #fff
+    }
+
+    .mcell.act.bad strong {
+      color: var(--red)
+    }
+
+    .mcell.act.neutral {
+      background: #f3f6fb
+    }
+
+    .mcell.act.neutral strong {
+      color: #6b7a99
+    }
+
+    .mcell strong svg {
+      font-size: 18px
+    }
+
+    /* Протокол */
+    .form {
+      padding: 14px
+    }
+
+    .form-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px
+    }
+
+    .form-title h3 {
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 24px;
+      line-height: 1.1;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .form-title h3 svg {
+      color: var(--blue);
+      font-size: 22px
+    }
+
+    .form-title small {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-align: right;
+      line-height: 1.3
+    }
+
+    .field {
+      margin-top: 16px
+    }
+
+    .field label,
+    .lbl2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      gap: 8px
+    }
+
+    .req {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 10px;
+      color: var(--red);
+      letter-spacing: .04em
+    }
+
+    .select {
+      position: relative
+    }
+
+    .select select {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+      height: 48px;
+      border: 1px solid var(--line);
+      background: #f2f5fa;
+      border-radius: 3px;
+      padding: 0 40px 0 12px;
+      font-size: 15px;
+      color: var(--ink);
+      outline: 0
+    }
+
+    .select select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px var(--blue-soft)
+    }
+
+    .select svg {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--ink)
+    }
+
+    .select.err select {
+      border-color: var(--red)
+    }
+
+    .resp {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f2f5fa;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      border-radius: 3px
+    }
+
+    .resp>svg {
+      font-size: 26px;
+      color: #6b7a99
+    }
+
+    .resp div {
+      flex: 1;
+      min-width: 0
+    }
+
+    .resp b {
+      display: block;
+      font-size: 16px;
+      font-weight: 600
+    }
+
+    .resp span {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--muted);
+      letter-spacing: .03em
+    }
+
+    .resp em {
+      font-style: normal;
+      background: var(--navy);
+      color: #fff;
+      font-family: var(--head);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      padding: 4px 8px;
+      text-transform: uppercase
+    }
+
+    .photos-h {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px
+    }
+
+    .photos-h .gps {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      color: var(--blue);
+      letter-spacing: .06em;
+      text-align: right;
+      line-height: 1.3;
+      font-weight: 700
+    }
+
+    .photos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px
+    }
+
+    .ph {
+      position: relative;
+      aspect-ratio: 1/1.05;
+      background: #c9d1e0;
+      overflow: hidden;
+      border-radius: 2px
+    }
+
+    .ph img,
+    .ph .stub {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block
+    }
+
+    .ph .stub {
+      background: linear-gradient(160deg, #9aa6bd, #5f6c86);
+      display: grid;
+      place-items: center;
+      color: rgba(255, 255, 255, .55);
+      font-size: 34px
+    }
+
+    .ph .cap {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 27, 51, .86);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .04em;
+      padding: 6px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-transform: uppercase
+    }
+
+    .ph .cap svg {
+      color: #7fb0ff;
+      font-size: 14px
+    }
+
+    .ph .rm {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(15, 27, 51, .7);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 12px
+    }
+
+    .add-photo {
+      margin-top: 10px;
+      width: 100%;
+      height: 46px;
+      border: 1px solid #c9d1e0;
+      background: #fff;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      border-radius: 3px
+    }
+
+    .add-photo:hover {
+      background: #f6f8fc
+    }
+
+    .confirm {
+      margin-top: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: #f2f5fa;
+      border: 1px solid var(--line);
+      padding: 12px;
+      border-radius: 3px;
+      cursor: pointer
+    }
+
+    .confirm input {
+      width: 20px;
+      height: 20px;
+      flex: none;
+      margin-top: 2px;
+      accent-color: var(--blue)
+    }
+
+    .confirm span {
+      font-size: 14px;
+      line-height: 1.45
+    }
+
+    .confirm.err {
+      border-color: var(--red);
+      background: #fdf1f0
+    }
+
+    /* Кнопки */
+    .cta {
+      margin: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0
+    }
+
+    .btn-main {
+      width: 100%;
+      min-height: 60px;
+      background: var(--red);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px 14px;
+      font-family: var(--head);
+      font-weight: 700;
+      font-size: 19px;
+      line-height: 1.15;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      text-align: center;
+      border-radius: 2px;
+      box-shadow: 0 3px 0 var(--red-dark)
+    }
+
+    .btn-main svg {
+      font-size: 22px
+    }
+
+    .btn-main:disabled {
+      background: #c9a3a0;
+      box-shadow: none;
+      cursor: not-allowed
+    }
+
+    .btn-main:not(:disabled):active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--red-dark)
+    }
+
+    .btn-sec {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 10px;
+      background: #fff;
+      border: 1px solid #1b2436;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      padding: 8px 12px;
+      border-radius: 2px;
+      text-align: center
+    }
+
+    .btn-sec:hover {
+      background: #f6f8fc
+    }
+
+    .footline {
+      margin: 14px 12px 0;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: .04em;
+      color: var(--muted)
+    }
+
+    .footline .al {
+      color: var(--red);
+      font-weight: 700
+    }
+
+    /* Уведомления и состояние "готово" */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--nav-h) + 20px);
+      transform: translateX(-50%) translateY(20px);
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
+      z-index: 60;
+      max-width: 90vw;
+      text-align: center
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%)
+    }
+
+    .done {
+      display: none;
+      margin: 12px;
+      padding: 18px;
+      background: #e0f3e8;
+      border: 1px solid #a9d9bd;
+      color: var(--green);
+      border-radius: 3px;
+      font-family: var(--head);
+      font-size: 18px;
+      letter-spacing: .04em;
+      text-transform: uppercase
+    }
+
+    .done small {
+      display: block;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .03em;
+      margin-top: 6px;
+      text-transform: none;
+      color: #2c6a47
+    }
+
+    body.is-done .done {
+      display: block
+    }
+
+    body.is-done .cta .btn-main,
+    body.is-done .cta .btn-sec {
+      display: none
+    }
+
+    /* ======================= ПЛАНШЕТ ======================= */
+    @media (min-width:700px) {
+      .mcells {
+        gap: 10px;
+        padding: 0 14px 14px
+      }
+
+      .photos {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))
+      }
+    }
+
+    /* ======================= КОМПЬЮТЕР ======================= */
+    @media (min-width:1024px) {
+      body {
+        padding: 0 0 0 var(--side-w)
+      }
+
+      .topbar {
+        background: #fff;
+        color: var(--ink);
+        border-bottom: 1px solid var(--line);
+        padding: 14px 28px
+      }
+
+      .icon-btn {
+        color: var(--ink);
+        background: #f1f4f9
+      }
+
+      .icon-btn:hover {
+        background: #e6ebf4
+      }
+
+      .icon-btn.box {
+        border: 0;
+        width: 38px;
+        height: 38px;
+        font-size: 20px
+      }
+
+      .ttl h1 {
+        font-size: 24px
+      }
+
+      .ttl small {
+        color: var(--muted);
+        opacity: 1
+      }
+
+      .user {
+        display: block;
+        text-align: right;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.3;
+        padding-left: 14px;
+        border-left: 1px solid var(--line)
+      }
+
+      .user b {
+        display: block;
+        font-size: 12px;
+        letter-spacing: .04em
+      }
+
+      .user span {
+        color: var(--muted)
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: var(--side-w);
+        background: var(--navy);
+        color: #fff;
+        z-index: 40;
+        padding: 20px 14px
+      }
+
+      .side-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 8px 22px;
+        border-bottom: 1px solid #26365c
+      }
+
+      .side-logo .lg {
+        background: var(--blue);
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center
+      }
+
+      .side-logo b {
+        font-family: var(--head);
+        font-size: 20px;
+        letter-spacing: .08em;
+        display: block
+      }
+
+      .side-logo span {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: #8c9abb;
+        letter-spacing: .06em
+      }
+
+      .side-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 18px
+      }
+
+      .side-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 4px;
+        font-family: var(--head);
+        font-weight: 500;
+        font-size: 16px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #a9b6d3;
+        text-decoration: none
+      }
+
+      .side-nav a svg {
+        font-size: 20px
+      }
+
+      .side-nav a:hover {
+        background: #1b2c52;
+        color: #fff
+      }
+
+      .side-nav a.on {
+        background: var(--blue);
+        color: #fff
+      }
+
+      .side-foot {
+        margin-top: auto;
+        padding: 12px;
+        background: #16264a;
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: #a9b6d3;
+        line-height: 1.6
+      }
+
+      .side-foot b {
+        color: #fff
+      }
+
+      .bottom {
+        display: none
+      }
+
+      .page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px 28px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        gap: 20px;
+        align-items: start
+      }
+
+      .alert-banner {
+        grid-column: 1/-1;
+        margin: 0
+      }
+
+      .alert-banner h2 {
+        font-size: 26px
+      }
+
+      .col-l,
+      .col-r {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 0
+      }
+
+      .panel,
+      .cta,
+      .footline,
+      .done {
+        margin: 0
+      }
+
+      .col-r {
+        position: sticky;
+        top: 84px
+      }
+
+      .cta {
+        margin-top: 0
+      }
+
+      .footline {
+        grid-column: 1/-1
+      }
+
+      .mcell strong {
+        font-size: 21px
+      }
+
+      .toast {
+        bottom: 30px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Боковое меню (компьютер) -->
+  <aside class="sidebar">
+    <div class="side-logo">
+      <div class="lg" data-i="car"></div>
+      <div><b>АВТОУЧЁТ</b><span id="sideDealer">РОЛЬФ СЕВЕР</span></div>
+    </div>
+    <nav class="side-nav" data-nav></nav>
+    <div class="side-foot">СЕРВЕР: <b id="sfServer">—</b><br>Смена: <b>дневная</b></div>
+  </aside>
+
+  <!-- Шапка -->
+  <header class="topbar">
+    <a class="icon-btn" href="mainpage.html" onclick="if(history.length>1){history.back();return false}"
+      aria-label="Назад" data-i="back"></a>
+    <div class="ttl">
+      <h1>Акт расхождения</h1>
+      <small>РЕЖИМ ПРОВЕРКИ // VIN AUDIT</small>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn box" id="btnScan" aria-label="Сканировать" data-i="scan"></button>
+      <button class="icon-btn box" id="btnHelp" aria-label="Помощь" data-i="help"></button>
+    </div>
+    <div class="user"><b id="userName">—</b><span id="userRole"></span></div>
+  </header>
+
+  <main class="page" id="page">
+
+    <!-- Критический баннер -->
+    <section class="alert-banner">
+      <div class="ico" data-i="warn"></div>
+      <div>
+        <div class="crit"><b>КРИТИЧЕСКИЙ СТАТУС</b><span id="actNo">#—</span></div>
+        <h2 id="actTitle">—</h2>
+        <p id="actWhere">—</p>
+      </div>
+    </section>
+
+    <div class="col-l">
+      <!-- Объект аудита -->
+      <section class="panel">
+        <div class="panel-h">
+          <h3><span data-i="doc2"></span>Объект аудита // Subject telemetry</h3>
+          <div class="sys" id="sysId">СИСТЕМА:<br>—</div>
+        </div>
+        <div class="subject">
+          <div class="row1">
+            <h4 id="sModel">—</h4><span class="pill" id="sStatus">—</span>
+          </div>
+          <div class="meta" id="sMeta">—</div>
+          <div class="vinbox">
+            <div class="vin-top"><span>Идентификационный номер кузова (VIN)</span><span class="bad" id="vinBad"
+                hidden><span data-i="shield"></span>Несовпадение привязки</span></div>
+            <div class="vin-cells">
+              <div><small>WMI</small><b id="vWmi">—</b></div>
+              <div><small>VDS</small><b id="vVds">—</b></div>
+              <div><small>VIS (ИНСПЕКЦИЯ)</small><b id="vVis">—</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Матрица сличения -->
+      <section class="panel">
+        <div class="panel-h">
+          <h3><span data-i="diff"></span>Матрица сличения данных</h3>
+          <div class="cnt" id="mCount">0<br>РАСХОЖДЕНИЯ</div>
+        </div>
+        <div id="matrix"></div>
+      </section>
+    </div>
+
+    <div class="col-r">
+      <!-- Протокол инцидента -->
+      <section class="panel">
+        <div class="form">
+          <div class="form-title">
+            <h3><span data-i="doc"></span>Протокол инцидента</h3>
+            <small>IMMUTABLE<br>LOG</small>
+          </div>
+
+          <div class="field">
+            <label for="reason">Причина расхождения <span class="req">*ОБЯЗАТЕЛЬНО</span></label>
+            <div class="select" id="reasonWrap">
+              <select id="reason"></select>
+              <span data-i="chev"></span>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="lbl2">Текущий ответственный</div>
+            <div class="resp">
+              <span data-i="badge"></span>
+              <div><b id="rName">—</b><span id="rRole"></span></div>
+              <em id="rBadge">ДЕЖУРНЫЙ</em>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="photos-h">
+              <div class="lbl2" style="margin:0">Материалы фотофиксации <span id="phCount"
+                  style="font-family:var(--mono);font-size:12px">(0)</span></div>
+              <div class="gps">GPS<br>СИНХРОНИЗИРОВАН</div>
+            </div>
+            <div class="photos" id="photos" style="margin-top:8px"></div>
+            <button class="add-photo" id="btnAddPhoto"><span data-i="camplus"></span>Добавить дополнительный
+              кадр</button>
+            <input type="file" id="fileInp" accept="image/*" capture="environment" hidden>
+          </div>
+
+          <label class="confirm" id="confirmBox">
+            <input type="checkbox" id="confirm">
+            <span>Я подтверждаю неизменность записи протокола согласно регламенту аудита автосалона и несу персональную
+              ответственность за фиксацию инцидента.</span>
+          </label>
+        </div>
+      </section>
+
+      <div class="cta">
+        <button class="btn-main" id="btnSubmit"><span data-i="siren"></span><span>Зафиксировать в журнале и уведомить
+            директора</span></button>
+        <button class="btn-sec" id="btnPostpone"><span data-i="clock"></span>Отложить на повторный скан (30
+          мин)</button>
+      </div>
+      <div class="done" id="done">Акт зафиксирован<small id="doneInfo"></small></div>
+    </div>
+
+    <div class="footline">
+      <span id="hashLine">ХЭШ СЕССИИ: —</span>
+      <span class="al" id="alarmLine"></span>
+    </div>
+  </main>
+
+  <!-- Нижнее меню (телефон) -->
+  <nav class="bottom" data-nav></nav>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* =====================================================================
+       1. КОНФИГ И API — ЗДЕСЬ ПОДКЛЮЧАЕТСЯ ВАША БАЗА ДАННЫХ
+       ===================================================================== */
+    const CONFIG = {
+      DEMO_MODE: true,   // false — когда подключите БД
+      API_BASE: '',      // например '/api'
+    };
+
+    // Идентификатор акта берётся из адреса: revision.html?act=АР-2024/104  или ?vin=WBSJU0108NCF98213
+    const params = new URLSearchParams(location.search);
+
+    const api = {
+      // Сессия пользователя
+      async getSession() {
+        if (CONFIG.DEMO_MODE) return { user: 'АУДИТОР-04', role: 'СТ. РЕВИЗОР', dealer: 'РОЛЬФ СЕВЕР' };
+        // TODO: return await (await fetch(CONFIG.API_BASE+'/session')).json();
+        return { user: '', role: '', dealer: '' };
+      },
+      // Акт расхождения. Формат — см. DEMO_ACT
+      async getAct() {
+        if (CONFIG.DEMO_MODE) return DEMO_ACT;
+        // TODO: const id = params.get('act'); const vin = params.get('vin');
+        // return await (await fetch(CONFIG.API_BASE+'/acts?act='+encodeURIComponent(id||'')+'&vin='+encodeURIComponent(vin||''))).json();
+        return null;
+      },
+      // Отправка акта: payload = {actNo, reason, responsible, photos:[...], confirmed:true}
+      async submitAct(payload) {
+        console.log('submitAct', payload);
+        // TODO: await fetch(CONFIG.API_BASE+'/acts/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        return { ok: true, logId: 'LOG-' + Date.now().toString(36).toUpperCase() };
+      },
+      // Отложить повторный скан на N минут
+      async postpone(actNo, minutes) {
+        console.log('postpone', actNo, minutes);
+        // TODO: await fetch(CONFIG.API_BASE+'/acts/postpone',{method:'POST', ...});
+        return { ok: true };
+      },
+      // Загрузка нового фото. Верните URL файла (или null — тогда останется локальный превью)
+      async uploadPhoto(file, actNo) {
+        console.log('uploadPhoto', file.name, actNo);
+        // TODO: const fd=new FormData(); fd.append('file',file); fd.append('act',actNo);
+        // return (await (await fetch(CONFIG.API_BASE+'/photos',{method:'POST',body:fd})).json()).url;
+        return null;
+      },
+    };
+
+    /* Тестовые данные. statusType: bad | warn | info. actualType: bad | neutral */
+    const DEMO_ACT = {
+      number: 'АР-2024/104',
+      title: 'Внимание: критическое несоответствие данных при плановой ревизии стоянки',
+      where: 'ОТКЛОНЕНИЕ ОБНАРУЖЕНО: СЕЙФ 04 / ЛОГИЧЕСКИЙ СЕКТОР B-СЕВЕР',
+      systemId: 'ДЦ-СЕВЕР-00392',
+      subject: {
+        model: 'BMW X5 M Competition', status: 'В РЕЗЕРВЕ', meta: 'МОДЕЛЬНЫЙ ГОД: 2024 · М-СПЕЦИФИКАЦИЯ (F95 LCI)',
+        wmi: 'WBS', vds: 'JU0108', vis: 'NCF98213', bindMismatch: true
+      },
+      matrix: [
+        { icon: 'parking', label: 'Слот парковки', status: 'НЕДОСТАЧА', statusType: 'bad', expected: 'B-12 (крытый паркинг)', actual: 'Пустой слот', actualType: 'bad', actualIcon: 'cross' },
+        { icon: 'key', label: 'Комплект ключей', status: 'РАСХОЖДЕНИЕ', statusType: 'line', expected: '2 ключа + смарт-карта', actual: 'В сейфе СБ (1 ключ)', actualType: 'bad' },
+        { icon: 'gauge', label: 'Пробег по ЭПТС', status: 'ТРЕБУЕТСЯ ОСМОТР', statusType: 'info', expected: '0 км (новый А/М)', actual: 'Неизвестно (нет А/М)', actualType: 'neutral' },
+      ],
+      reasons: ['Несанкционированное перемещение', 'Ошибка учёта (WMS/1С)', 'Хищение / утрата', 'Тест-драйв без оформления', 'Передан в сервис без акта', 'Другое (указать в комментарии)'],
+      reason: 'Несанкционированное перемещение',
+      responsible: { name: 'Лебедев К.А.', role: 'Мастер-приемщик цеха М-Сервис', badge: 'ДЕЖУРНЫЙ' },
+      photos: [{ caption: 'Слот B-12: пусто', src: '' }, { caption: 'Журнал ключей СБ', src: '' }],
+      session: { hash: '#0x9FC2B9', server: 'MSK-NORTH-DC01' },
+      alarm: true,
+    };
+
+    /* =====================================================================
+       2. ИКОНКИ И НАВИГАЦИЯ
+       ===================================================================== */
+    const I = {
+      car: '<path d="M5 17h14M3 13l2-6h14l2 6v4H3zM7 17v2M17 17v2"/>',
+      back: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
+      scan: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 9h2v2H8zM14 9h2v2h-2zM8 14h2M14 14h2v1"/>',
+      help: '<path d="M9.5 9a2.5 2.5 0 115 0c0 1.5-2.5 2-2.5 3.5M12 17v.5"/>',
+      warn: '<path d="M12 3l10 18H2zM12 10v5M12 18v.5"/>',
+      doc: '<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 13h6M9 17h6"/>',
+      doc2: '<path d="M4 6h16M4 12h10M4 18h6M16 15l2 2 3-4"/>',
+      diff: '<path d="M5 7h9M5 12h5M5 17h9M17 8l3 3-3 3"/>',
+      shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM12 9v4M12 15.5v.5"/>',
+      chev: '<path d="M6 9l6 6 6-6"/>',
+      badge: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.5-2 5.5-2 6 0M14 10h4M14 14h3"/>',
+      camplus: '<path d="M4 8h3l2-3h6l2 3h3v11H4zM12 16a3 3 0 100-6 3 3 0 000 6zM19 3v4M17 5h4"/>',
+      siren: '<path d="M7 18v-6a5 5 0 0110 0v6M4 18h16v3H4zM12 3v2M4.5 6.5l1.5 1.5M19.5 6.5L18 8"/>',
+      clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      parking: '<text x="12" y="17" text-anchor="middle" font-size="15" font-weight="800" fill="currentColor" stroke="none" font-family="Oswald,sans-serif">P</text>',
+      key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/>',
+      gauge: '<path d="M4 17a8 8 0 1116 0M12 17l4-5"/><circle cx="12" cy="17" r=".8"/>',
+      cross: '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+      warehouse: '<path d="M3 10l9-6 9 6v10H3zM8 20v-6h8v6"/>',
+      vin: '<path d="M4 7v10M7 7v10M10 7v10M14 7v10M17 7v10M20 7v10"/>',
+      revision: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11l2 2 4-4M9 17h6"/>',
+      journal: '<path d="M5 4h12a2 2 0 012 2v14H7a2 2 0 01-2-2zM9 9h6M9 13h6"/>',
+      user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+      img: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/>',
+      ok: '<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',
+      x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    };
+    const ic = n => `<svg viewBox="0 0 24 24">${I[n] || ''}</svg>`;
+    const $ = s => document.querySelector(s);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('show'), 2400); }
+    document.querySelectorAll('[data-i]').forEach(el => el.innerHTML = ic(el.dataset.i));
+
+    const NAV = [
+      { href: 'index.html', label: 'Склад', icon: 'warehouse' },
+      { href: 'index.html', label: 'VIN скан', icon: 'vin' },
+      { href: 'revision.html', label: 'Ревизия', icon: 'revision', on: true },
+      { href: '#', label: 'Журнал', icon: 'journal' },
+      { href: '#', label: 'Профиль', icon: 'user' },
+    ];
+    document.querySelectorAll('[data-nav]').forEach(box => {
+      box.innerHTML = NAV.map(n => `<a href="${n.href}" class="${n.on ? 'on' : ''}" ${n.href === '#' ? 'data-stub' : ''}>${ic(n.icon)}<span>${n.label}</span></a>`).join('');
+    });
+    document.addEventListener('click', e => { const a = e.target.closest('[data-stub]'); if (a) { e.preventDefault(); toast('Раздел «' + a.textContent.trim() + '» — подключить'); } });
+
+    /* =====================================================================
+       3. ОТРИСОВКА АКТА
+       ===================================================================== */
+    const state = { act: null, photos: [] };
+
+    function renderMatrix(rows) {
+      $('#mCount').innerHTML = rows.length + '<br>РАСХОЖДЕНИЯ';
+      $('#matrix').innerHTML = rows.map(r => {
+        const chip = r.statusType === 'info' ? 'info' : (r.statusType === 'line' ? 'line' : 'fill');
+        const bad = r.statusType !== 'info';
+        return `<div class="mrow ${bad ? 'bad' : ''}">
+      <div class="mhead"><span class="lbl">${ic(r.icon)}${esc(r.label)}</span><span class="chip ${chip}">${esc(r.status)}</span></div>
+      <div class="mcells">
+        <div class="mcell exp ${r.statusType === 'bad' ? 'blue' : ''}"><small>По данным 1С / WMS</small><strong>${esc(r.expected)}</strong></div>
+        <div class="mcell act ${r.actualType}"><small>Фактически на складе</small><strong>${r.actualIcon ? ic(r.actualIcon) : ''}${esc(r.actual)}</strong></div>
+      </div>
+    </div>`;
+      }).join('');
+    }
+    function renderPhotos() {
+      const p = state.photos;
+      $('#phCount').textContent = '(' + p.length + ')';
+      $('#photos').innerHTML = p.map((f, i) => `<div class="ph">
+    ${f.src ? `<img src="${esc(f.src)}" alt="${esc(f.caption)}">` : `<div class="stub">${ic('img')}</div>`}
+    ${f.local ? `<button class="rm" data-rm="${i}" aria-label="Удалить">${ic('x')}</button>` : ''}
+    <div class="cap"><span>${esc(f.caption)}</span>${ic('ok')}</div>
+  </div>`).join('');
+    }
+    function renderAct(a) {
+      $('#actNo').textContent = '#' + a.number;
+      $('#actTitle').textContent = a.title;
+      $('#actWhere').textContent = a.where;
+      $('#sysId').innerHTML = 'СИСТЕМА:<br>' + esc(a.systemId);
+      const s = a.subject;
+      $('#sModel').textContent = s.model;
+      $('#sStatus').textContent = s.status;
+      $('#sMeta').textContent = s.meta;
+      $('#vWmi').textContent = s.wmi; $('#vVds').textContent = s.vds; $('#vVis').textContent = s.vis;
+      $('#vinBad').hidden = !s.bindMismatch;
+      renderMatrix(a.matrix);
+      $('#reason').innerHTML = '<option value="">— выберите причину —</option>' + a.reasons.map(r => `<option ${r === a.reason ? 'selected' : ''}>${esc(r)}</option>`).join('');
+      $('#rName').textContent = a.responsible.name;
+      $('#rRole').textContent = a.responsible.role;
+      $('#rBadge').textContent = a.responsible.badge || 'ДЕЖУРНЫЙ';
+      state.photos = (a.photos || []).map(p => ({ ...p }));
+      renderPhotos();
+      $('#hashLine').textContent = 'ХЭШ СЕССИИ: ' + a.session.hash + ' СЕРВЕР: ' + a.session.server;
+      $('#alarmLine').textContent = a.alarm ? 'ТРЕВОГА ВКЛ' : '';
+      $('#sfServer').textContent = a.session.server;
+    }
+
+    /* =====================================================================
+       4. СОБЫТИЯ
+       ===================================================================== */
+    $('#btnAddPhoto').addEventListener('click', () => $('#fileInp').click());
+    $('#fileInp').addEventListener('change', async e => {
+      const f = e.target.files[0]; if (!f) return;
+      const local = URL.createObjectURL(f);
+      const url = await api.uploadPhoto(f, state.act?.number);
+      state.photos.push({ caption: 'Доп. кадр ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }), src: url || local, local: true });
+      renderPhotos(); e.target.value = ''; toast('Кадр добавлен');
+    });
+    $('#photos').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (!b) return; state.photos.splice(+b.dataset.rm, 1); renderPhotos(); });
+
+    $('#reason').addEventListener('change', () => $('#reasonWrap').classList.remove('err'));
+    $('#confirm').addEventListener('change', () => $('#confirmBox').classList.remove('err'));
+
+    $('#btnSubmit').addEventListener('click', async () => {
+      const reason = $('#reason').value, ok = $('#confirm').checked;
+      $('#reasonWrap').classList.toggle('err', !reason);
+      $('#confirmBox').classList.toggle('err', !ok);
+      if (!reason) { toast('Укажите причину расхождения'); $('#reason').focus(); return; }
+      if (!ok) { toast('Подтвердите ответственность за запись'); return; }
+      const btn = $('#btnSubmit'); btn.disabled = true;
+      const res = await api.submitAct({
+        actNo: state.act.number, reason, responsible: state.act.responsible,
+        photos: state.photos.map(p => ({ caption: p.caption, src: p.local ? null : p.src })),
+        confirmed: true, at: new Date().toISOString(),
+      });
+      btn.disabled = false;
+      if (res?.ok) {
+        document.body.classList.add('is-done');
+        $('#doneInfo').textContent = 'Запись №' + (res.logId || '—') + ' · директор уведомлен · ' + new Date().toLocaleString('ru-RU');
+        $('#alarmLine').textContent = '';
+        toast('Акт зафиксирован, директор уведомлен');
+      } else toast('Ошибка отправки акта');
+    });
+    $('#btnPostpone').addEventListener('click', async () => {
+      const r = await api.postpone(state.act.number, 30);
+      if (r?.ok) toast('Повторный скан через 30 минут');
+    });
+    $('#btnScan').addEventListener('click', () => toast('Сканер VIN — подключить'));
+    $('#btnHelp').addEventListener('click', () => toast('Заполните причину, приложите фото и подтвердите запись'));
+
+    /* =====================================================================
+       5. ЗАПУСК
+       ===================================================================== */
+    (async function init() {
+      const s = await api.getSession();
+      $('#userName').textContent = s.user || '—';
+      $('#userRole').textContent = s.role || '';
+      if (s.dealer) $('#sideDealer').textContent = s.dealer;
+      const act = await api.getAct();
+      if (!act) { $('#page').innerHTML = '<p style="padding:40px 16px;text-align:center;color:#6b7589">Акт не найден. Подключите базу данных.</p>'; return; }
+      state.act = act;
+      renderAct(act);
+    })();
+  </script>
+  <script src="nav.js"></script>
+</body>
+
+</html>

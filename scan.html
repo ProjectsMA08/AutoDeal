@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1b33">
+  <title>VIN скан — Автоучёт</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap&subset=cyrillic"
+    rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f1b33;
+      --navy2: #16264a;
+      --blue: #2f63d1;
+      --blue-soft: #e6eefc;
+      --red: #c62828;
+      --ink: #1b2436;
+      --muted: #6b7589;
+      --line: #dfe4ee;
+      --bg: #eef1f6;
+      --head: 'Oswald', sans-serif;
+      --body: 'Inter', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --nav-h: 64px;
+      --side-w: 248px
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%
+    }
+
+    body {
+      font-family: var(--body);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom))
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0;
+      background: none;
+      color: inherit
+    }
+
+    input {
+      font: inherit
+    }
+
+    svg {
+      width: 1em;
+      height: 1em;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .sidebar {
+      display: none
+    }
+
+    /* шапка */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: linear-gradient(180deg, #3b4a63, #1d2b47);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .14);
+      display: grid;
+      place-items: center;
+      font-size: 22px
+    }
+
+    .brand {
+      flex: 1;
+      min-width: 0
+    }
+
+    .brand h1 {
+      font-family: var(--head);
+      font-size: 20px;
+      letter-spacing: .06em;
+      font-weight: 600;
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .ver {
+      font-family: var(--mono);
+      font-size: 10px;
+      background: rgba(255, 255, 255, .2);
+      padding: 2px 6px;
+      border-radius: 3px
+    }
+
+    .brand small {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      opacity: .8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px
+    }
+
+    .icon-btn {
+      position: relative;
+      width: 36px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      color: #fff;
+      border-radius: 8px
+    }
+
+    .dot {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 8px;
+      height: 8px;
+      background: #ff6b5e
+    }
+
+    .user {
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.3
+    }
+
+    .user b {
+      display: block;
+      font-size: 12px;
+      letter-spacing: .04em
+    }
+
+    .user span {
+      opacity: .75
+    }
+
+    /* сессия */
+    .session {
+      background: var(--navy);
+      color: #fff;
+      padding: 14px 14px 12px;
+      position: relative
+    }
+
+    .session::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #8fb4f0 0 33%, var(--blue) 33% 66%, #c9392f 66%)
+    }
+
+    .srow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px
+    }
+
+    .session h2 {
+      font-family: var(--head);
+      font-size: 22px;
+      letter-spacing: .06em;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap
+    }
+
+    .session h2 i {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #8fb4f0
+    }
+
+    .prog {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #9fb0d6;
+      letter-spacing: .08em;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .prog b {
+      background: #1c2e57;
+      color: #fff;
+      font-size: 15px;
+      padding: 6px 10px;
+      border-radius: 3px;
+      letter-spacing: .06em
+    }
+
+    .pbar {
+      height: 6px;
+      background: #26365c;
+      margin: 12px 0 10px;
+      border-radius: 2px;
+      overflow: hidden
+    }
+
+    .pbar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: #4f86f0;
+      transition: width .4s
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #b8c4e0;
+      letter-spacing: .05em
+    }
+
+    .stats b {
+      font-weight: 500;
+      color: #fff
+    }
+
+    /* камера */
+    .cam {
+      position: relative;
+      background: #04070d;
+      aspect-ratio: 5/3;
+      overflow: hidden;
+      color: #fff
+    }
+
+    .cam video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .cam.inv video {
+      filter: invert(1) contrast(1.2)
+    }
+
+    .hud {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 10px;
+      z-index: 3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, .55);
+      padding: 6px 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .07em;
+      line-height: 1.4
+    }
+
+    .hud .rec {
+      display: flex;
+      gap: 6px;
+      align-items: flex-start
+    }
+
+    .hud .rec i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ff4a3d;
+      margin-top: 4px;
+      animation: pulse 1.2s infinite
+    }
+
+    .hud .mid {
+      border-left: 1px solid #555;
+      padding-left: 10px;
+      flex: 1
+    }
+
+    .hud .r {
+      text-align: right;
+      color: #8fb4f0
+    }
+
+    @keyframes pulse {
+      50% {
+        opacity: .2
+      }
+    }
+
+    .reticle {
+      position: absolute;
+      inset: 16% 7% 12%;
+      z-index: 2;
+      pointer-events: none
+    }
+
+    .reticle i {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border: 4px solid #8fb4f0
+    }
+
+    .reticle i:nth-child(1) {
+      left: 0;
+      top: 0;
+      border-right: 0;
+      border-bottom: 0
+    }
+
+    .reticle i:nth-child(2) {
+      right: 0;
+      top: 0;
+      border-left: 0;
+      border-bottom: 0
+    }
+
+    .reticle i:nth-child(3) {
+      left: 0;
+      bottom: 0;
+      border-color: #d8402f;
+      border-right: 0;
+      border-top: 0
+    }
+
+    .reticle i:nth-child(4) {
+      right: 0;
+      bottom: 0;
+      border-color: #d8402f;
+      border-left: 0;
+      border-top: 0
+    }
+
+    .reticle .line {
+      position: absolute;
+      left: 2%;
+      right: 2%;
+      top: 50%;
+      height: 2px;
+      background: #d8402f;
+      box-shadow: 0 0 8px #d8402f;
+      transition: background .2s
+    }
+
+    .cam.locked .reticle .line {
+      background: #3fd07f;
+      box-shadow: 0 0 10px #3fd07f
+    }
+
+    .cam.locked .reticle i {
+      border-color: #3fd07f
+    }
+
+    .lockl {
+      position: absolute;
+      left: 50%;
+      top: 60%;
+      transform: translateX(-50%);
+      z-index: 3;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .2em;
+      background: rgba(30, 60, 120, .45);
+      padding: 5px 12px;
+      white-space: nowrap
+    }
+
+    .camerr {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 20px;
+      background: rgba(4, 7, 13, .92);
+      font-size: 13px;
+      line-height: 1.5
+    }
+
+    .camerr.on {
+      display: flex
+    }
+
+    .cbar {
+      background: #04070d;
+      display: flex;
+      gap: 8px;
+      padding: 0 0 0 0
+    }
+
+    .cbtn {
+      height: 44px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0a0f1a;
+      color: #fff;
+      font-family: var(--head);
+      font-weight: 500;
+      letter-spacing: .06em;
+      font-size: 14px;
+      text-transform: uppercase
+    }
+
+    .cbtn.on {
+      background: #1c2e57;
+      box-shadow: inset 0 -3px 0 #8fb4f0
+    }
+
+    .cbtn.blue {
+      background: var(--blue);
+      margin-left: auto
+    }
+
+    .cbtn svg {
+      font-size: 18px
+    }
+
+    /* результат */
+    .res {
+      background: #fff;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .rhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      background: #f1f4fa;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .05em;
+      color: var(--ink)
+    }
+
+    .rhead span {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .rhead svg {
+      color: var(--blue);
+      font-size: 18px
+    }
+
+    .pill {
+      background: var(--blue);
+      color: #fff;
+      padding: 5px 10px;
+      font-weight: 700;
+      font-size: 11px
+    }
+
+    .pill.warn {
+      background: #b7791f
+    }
+
+    .rbody {
+      padding: 14px
+    }
+
+    .seg-h {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .06em;
+      margin-bottom: 8px
+    }
+
+    .seg-h b {
+      color: var(--blue);
+      font-weight: 500;
+      display: flex;
+      gap: 6px;
+      align-items: center
+    }
+
+    .seg-h b.na {
+      color: #b7791f
+    }
+
+    .vinbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--navy);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      padding: 16px 14px;
+      gap: 6px;
+      overflow: hidden
+    }
+
+    .vinbar span:nth-child(odd) {
+      color: #8fb4f0;
+      font-weight: 500
+    }
+
+    .vinbar span:nth-child(2) {
+      color: #fff
+    }
+
+    .vinbar em {
+      font-style: normal;
+      color: #3c4f7a;
+      font-weight: 400
+    }
+
+    .vinbar.empty {
+      color: #4a5a80;
+      justify-content: center;
+      font-size: 15px
+    }
+
+    .carrow {
+      display: flex;
+      gap: 14px;
+      margin-top: 16px;
+      padding: 14px;
+      background: #f1f4fa
+    }
+
+    .carrow .ph {
+      width: 84px;
+      height: 68px;
+      flex: none;
+      background: #c4cad6 center/cover;
+      position: relative;
+      display: grid;
+      place-items: center;
+      color: #7a869c;
+      font-size: 26px
+    }
+
+    .carrow .ph b {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 27, 51, .8);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+      padding: 2px
+    }
+
+    .carrow h3 {
+      font-family: var(--head);
+      font-size: 26px;
+      letter-spacing: .02em;
+      line-height: 1.05;
+      text-transform: uppercase
+    }
+
+    .carrow p {
+      font-size: 13px;
+      color: #3a4660;
+      margin-top: 4px;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden
+    }
+
+    .carrow .col {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      letter-spacing: .04em
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px
+    }
+
+    .box {
+      background: #f1f4fa;
+      padding: 14px;
+      min-width: 0
+    }
+
+    .box small {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: .08em;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 6px;
+      text-transform: uppercase
+    }
+
+    .box small svg {
+      color: var(--blue);
+      font-size: 15px
+    }
+
+    .slot {
+      font-family: var(--head);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+      margin-top: 10px;
+      letter-spacing: .02em;
+      line-height: 1
+    }
+
+    .box p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px
+    }
+
+    .tagd {
+      background: var(--navy);
+      color: #fff;
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 14px;
+      padding: 4px 8px;
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      max-width: 80px;
+      text-align: left
+    }
+
+    .dkp {
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 15px;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: .02em
+    }
+
+    .info {
+      display: flex;
+      gap: 12px;
+      background: var(--blue-soft);
+      padding: 12px 14px;
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #3a4660
+    }
+
+    .info svg {
+      color: var(--blue);
+      font-size: 18px;
+      margin-top: 2px
+    }
+
+    /* действия */
+    .acts {
+      padding: 14px;
+      display: grid;
+      gap: 12px
+    }
+
+    .abtn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-family: var(--head);
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.1;
+      padding: 14px;
+      min-height: 64px
+    }
+
+    .abtn.ok {
+      background: var(--blue);
+      color: #fff;
+      font-size: 22px;
+      position: relative;
+      justify-content: space-between
+    }
+
+    .abtn.ok svg {
+      font-size: 26px
+    }
+
+    .abtn.ok span {
+      flex: 1
+    }
+
+    .abtn.ok kbd {
+      font-family: var(--mono);
+      font-size: 10px;
+      background: #1d3f93;
+      padding: 8px 10px;
+      letter-spacing: .1em;
+      text-align: right;
+      font-weight: 500
+    }
+
+    .abtn.bad {
+      border: 2px solid var(--red);
+      color: var(--red);
+      font-size: 22px;
+      background: #fff;
+      justify-content: space-between
+    }
+
+    .abtn.bad small {
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-align: right;
+      font-weight: 600
+    }
+
+    .abtn:disabled {
+      opacity: .4;
+      cursor: not-allowed
+    }
+
+    .links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      padding: 4px 14px 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .05em;
+      color: #4a5670;
+      text-transform: uppercase
+    }
+
+    .links button {
+      display: flex;
+      gap: 6px;
+      align-items: center
+    }
+
+    /* нижнее меню */
+    .bottom {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 30;
+      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: var(--navy);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border-top: 1px solid #2b3b63
+    }
+
+    .bottom button,
+    .side-nav button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: #8c9abb;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase
+    }
+
+    .bottom button svg {
+      font-size: 22px
+    }
+
+    .bottom button.on {
+      color: #fff;
+      background: var(--navy2);
+      box-shadow: inset 0 -3px 0 var(--blue)
+    }
+
+    .bottom button.on svg {
+      outline: 1px solid #c9392f;
+      outline-offset: 6px;
+      border-radius: 1px
+    }
+
+    /* режимы и детали */
+    .modes {
+      display: flex;
+      background: #0a0f1a;
+      border-bottom: 1px solid #1c2e57
+    }
+
+    .modes button {
+      flex: 1;
+      height: 40px;
+      font-family: var(--head);
+      font-weight: 500;
+      letter-spacing: .07em;
+      font-size: 14px;
+      text-transform: uppercase;
+      color: #8c9abb
+    }
+
+    .modes button.on {
+      color: #fff;
+      background: #16264a;
+      box-shadow: inset 0 -3px 0 #8fb4f0
+    }
+
+    .chk {
+      margin-top: 12px;
+      border: 1px solid var(--line)
+    }
+
+    .chk h4 {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .08em;
+      color: var(--muted);
+      padding: 10px 12px;
+      background: #f1f4fa;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 500
+    }
+
+    .chk .it {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      font-size: 13px
+    }
+
+    .chk .it.done {
+      color: #1f8a4c;
+      font-weight: 600
+    }
+
+    .chk .it em {
+      font-style: normal;
+      font-family: var(--mono);
+      font-size: 12px
+    }
+
+    .tf label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin: 12px 0 4px;
+      text-transform: uppercase
+    }
+
+    .tf input[type=text],
+    .tf input[type=number] {
+      width: 100%;
+      height: 44px;
+      border: 2px solid var(--line);
+      padding: 0 12px;
+      font-size: 15px;
+      outline: 0
+    }
+
+    .tf input:focus {
+      border-color: var(--blue)
+    }
+
+    .tf .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+      font-size: 13px
+    }
+
+    .tf .row input[type=number] {
+      width: 70px
+    }
+
+    .tf .shots {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px
+    }
+
+    .tf .shots i {
+      width: 56px;
+      height: 56px;
+      background: #e8ecf4 center/cover;
+      border: 1px solid var(--line)
+    }
+
+    .tbtn {
+      height: 48px;
+      width: 100%;
+      margin-top: 10px;
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: var(--blue);
+      color: #fff
+    }
+
+    .tbtn.g {
+      background: #eef1f7;
+      color: var(--ink)
+    }
+
+    .tbtn:disabled {
+      opacity: .4
+    }
+
+    /* заглушка разделов */
+    .stub {
+      display: none;
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--muted)
+    }
+
+    .stub h2 {
+      font-family: var(--head);
+      font-size: 26px;
+      color: var(--ink);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 8px
+    }
+
+    /* модалка */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(10, 18, 36, .65);
+      display: none;
+      align-items: flex-end;
+      justify-content: center
+    }
+
+    .modal.open {
+      display: flex
+    }
+
+    .sheet {
+      background: #fff;
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+      border-radius: 10px 10px 0 0
+    }
+
+    .sheet h3 {
+      font-family: var(--head);
+      font-size: 22px;
+      letter-spacing: .05em;
+      text-transform: uppercase
+    }
+
+    .sheet p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 6px 0 14px
+    }
+
+    .sheet input {
+      width: 100%;
+      height: 50px;
+      border: 2px solid var(--blue);
+      padding: 0 14px;
+      font-family: var(--mono);
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      outline: 0
+    }
+
+    .btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px
+    }
+
+    .btns button {
+      flex: 1;
+      height: 46px;
+      font-family: var(--head);
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-size: 16px
+    }
+
+    .btns .g {
+      background: #eef1f7
+    }
+
+    .btns .b {
+      background: var(--blue);
+      color: #fff
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--nav-h) + 20px);
+      transform: translateX(-50%) translateY(20px);
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 16px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
+      z-index: 60;
+      max-width: 90vw;
+      text-align: center;
+      border: 1px solid #2b3b63
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%)
+    }
+
+    /* компьютер */
+    @media (min-width:1024px) {
+      body {
+        padding: 0 0 0 var(--side-w)
+      }
+
+      .bottom {
+        display: none
+      }
+
+      .topbar {
+        background: #fff;
+        color: var(--ink);
+        border-bottom: 1px solid var(--line);
+        padding: 14px 28px
+      }
+
+      .topbar .logo {
+        display: none
+      }
+
+      .brand h1 {
+        font-size: 24px
+      }
+
+      .brand small {
+        color: var(--muted);
+        opacity: 1
+      }
+
+      .ver {
+        background: var(--blue-soft);
+        color: var(--blue)
+      }
+
+      .icon-btn {
+        color: var(--ink);
+        background: #f1f4f9;
+        margin-left: 4px
+      }
+
+      .user {
+        padding-left: 14px;
+        border-left: 1px solid var(--line)
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: var(--side-w);
+        background: var(--navy);
+        color: #fff;
+        z-index: 40;
+        padding: 20px 14px
+      }
+
+      .side-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 8px 22px;
+        border-bottom: 1px solid #26365c
+      }
+
+      .side-logo .logo {
+        background: var(--blue)
+      }
+
+      .side-logo b {
+        font-family: var(--head);
+        font-size: 20px;
+        letter-spacing: .08em;
+        display: block
+      }
+
+      .side-logo span {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: #8c9abb
+      }
+
+      .side-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 18px
+      }
+
+      .side-nav button {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 4px;
+        font-family: var(--head);
+        font-weight: 500;
+        font-size: 16px;
+        letter-spacing: .08em;
+        color: #a9b6d3
+      }
+
+      .side-nav button svg {
+        font-size: 20px
+      }
+
+      .side-nav button:hover {
+        background: #1b2c52;
+        color: #fff
+      }
+
+      .side-nav button.on {
+        background: var(--blue);
+        color: #fff
+      }
+
+      .side-foot {
+        margin-top: auto;
+        padding: 12px;
+        background: #16264a;
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: #a9b6d3;
+        line-height: 1.6
+      }
+
+      .side-foot b {
+        color: #fff
+      }
+
+      #scanView {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(380px, 1fr);
+        grid-template-areas: "s s" "c r";
+        gap: 20px;
+        padding: 20px 28px;
+        align-items: start;
+        max-width: 1500px;
+        margin: 0 auto
+      }
+
+      .session {
+        grid-area: s;
+        border-radius: 6px
+      }
+
+      .camcol {
+        grid-area: c;
+        border-radius: 6px;
+        overflow: hidden;
+        position: sticky;
+        top: 84px
+      }
+
+      .cam {
+        aspect-ratio: 16/10
+      }
+
+      .rescol {
+        grid-area: r;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+        background: #fff
+      }
+
+      .res {
+        border: 0
+      }
+
+      .links {
+        padding-bottom: 18px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="sidebar">
+    <div class="side-logo">
+      <div class="logo" data-i="car"></div>
+      <div><b>АВТОУЧЁТ</b><span id="sideDealer">РОЛЬФ СЕВЕР</span></div>
+    </div>
+    <nav class="side-nav" id="sideNav"></nav>
+    <div class="side-foot">ХАБ-СЕВЕР<br>WMS: <b>—</b><br>Смена: <b>дневная</b></div>
+  </aside>
+
+  <header class="topbar">
+    <div class="logo" data-i="car"></div>
+    <div class="brand">
+      <h1>АВТОУЧЁТ <span class="ver">V4.2</span></h1><small id="brandSub">РОЛЬФ СЕВЕР // LEXUS &amp; MULTIBRAND</small>
+    </div>
+    <button class="icon-btn" aria-label="Уведомления"><span data-i="bell"></span><i class="dot"></i></button>
+    <button class="icon-btn" aria-label="Синхронизация" id="btnSync"><span data-i="swap"></span></button>
+    <div class="user"><b id="userName">АУДИТОР-04</b><span id="userRole">СТ. РЕВИЗОР</span></div>
+  </header>
+
+  <main>
+    <div id="scanView">
+      <section class="session">
+        <div class="srow">
+          <h2><i></i>СЕССИЯ: <span id="sessName">АУДИТ З…</span></h2>
+          <div class="prog">ПРОГРЕСС: <b id="progTxt">0 / 0 АВТО</b></div>
+        </div>
+        <div class="pbar"><i id="progBar"></i></div>
+        <div class="stats"><span>ТАКТ: <b id="takt">—</b></span><span>СХОДИМОСТЬ: <b id="conv">—</b></span><span>СЕКТОР:
+            <b id="sectRange">—</b></span></div>
+      </section>
+
+      <section class="camcol">
+        <div class="modes" id="modes"><button class="on" data-mode="vin">VIN / штрихкод</button><button
+            data-mode="part">Деталь (ИИ)</button></div>
+        <div class="cam" id="cam">
+          <video id="video" playsinline muted autoplay></video>
+          <div class="hud">
+            <div class="rec"><i></i><span id="hudRes">— FPS<br>HDR</span></div>
+            <div class="mid">АВТО-ЗАХВАТ: ШТРИХ +<br>ГРАВИРОВКА</div>
+            <div class="r" id="hudIso">ISO AUTO //<br>F—</div>
+          </div>
+          <div class="reticle"><i></i><i></i><i></i><i></i>
+            <div class="line"></div>
+          </div>
+          <div class="lockl" id="lockl">ПОИСК: 0/17 CHARS</div>
+          <div class="camerr" id="camerr">
+            <div id="camerrTxt"></div><button class="cbtn blue" style="margin:0" id="camRetry">Включить камеру</button>
+          </div>
+        </div>
+        <div class="cbar">
+          <button class="cbtn" id="btnTorch"><span data-i="torch"></span>Подсветка</button>
+          <button class="cbtn" id="btnInv"><span data-i="invert"></span>Инверсия</button>
+          <button class="cbtn blue" id="btnTeach" style="display:none"><span data-i="check"></span>Обучить
+            деталь</button>
+          <button class="cbtn blue" id="btnManual"><span data-i="kbd"></span>Ввод вручную</button>
+        </div>
+      </section>
+
+      <div class="rescol">
+        <section class="res" id="res"></section>
+        <div class="acts">
+          <button class="abtn ok" id="btnOk" disabled><span data-i="check"></span><span id="okTxt">Подтвердить
+              совпадение</span><kbd>ENTER<br>↵</kbd></button>
+          <button class="abtn bad" id="btnBad" disabled><span data-i="warn"></span><span>Фиксировать
+              расхождение</span><small>СМЕЩЕНИЕ /<br>НЕДОСТАЧА</small></button>
+        </div>
+        <div class="links">
+          <button id="lPrint"><span data-i="print"></span>Печать штрих-стикера</button>
+          <button id="lPhoto"><span data-i="cam"></span>Фото повреждений</button>
+          <button id="lLog"><span data-i="hist"></span>Журнал слота</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stub" id="stub">
+      <h2 id="stubT"></h2>
+      <p>Раздел ещё не подключён.</p>
+    </div>
+  </main>
+
+  <nav class="bottom" id="bottomNav"></nav>
+
+  <div class="modal" id="modal">
+    <div class="sheet">
+      <h3>Ввод вручную</h3>
+      <p>Введите VIN целиком (17 знаков) или последние 7 знаков.</p>
+      <input id="manIn" maxlength="17" placeholder="N4018342" autocomplete="off" autocapitalize="characters">
+      <div class="btns"><button class="g" id="manCancel">Отмена</button><button class="b" id="manOk">Найти</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+  <script>
+    /* =====================================================================
+       1. КОНФИГ И API — ЗДЕСЬ ПОДКЛЮЧАЕТСЯ БАЗА ДАННЫХ
+       ===================================================================== */
+    const CONFIG = { DEMO_MODE: true, API_BASE: '' };   // DEMO_MODE=false когда подключите БД
+
+    /* Формат записи авто (то, что должна вернуть БД по VIN) */
+    const DEMO_DB = {
+      'JTJHY7AX9N4018342': {
+        vin: 'JTJHY7AX9N4018342', model: 'Lexus ES 250 F-Sport',
+        spec: 'F-Sport Black Line // 2.5L 204 л.с. // Aisin 8-АКПП', year: 2023,
+        colorCode: '085', color: 'Белый Перламутр', photo: '',
+        sector: 'С-08', zone: 'Зона выдачи клиентам',
+        status: 'В РЕЗЕРВЕ', dkp: 'ДКП-9421', paid: true, client: 'Волков С.М.',
+        note: 'Автомобиль ожидает финальной сверки акта выдачи. Ключи находятся в сейф-терминале №2 (Ячейка #14).'
+      }
+    };
+    const api = {
+      async getSession() {
+        if (CONFIG.DEMO_MODE) return {
+          user: 'АУДИТОР-04', role: 'СТ. РЕВИЗОР', dealer: 'РОЛЬФ СЕВЕР', brands: 'LEXUS & MULTIBRAND',
+          sessionName: 'АУДИТ З…', done: 84, total: 120, sectors: 'С-08…С-24', convergence: 98.8
+        };
+        // TODO: return await (await fetch(CONFIG.API_BASE+'/session')).json();
+        return { user: '', role: '', dealer: '', brands: '', sessionName: '', done: 0, total: 0, sectors: '', convergence: null };
+      },
+      /* Поиск авто по VIN (17 знаков) или по последним знакам. Вернуть объект или null */
+      async lookupVin(vin) {
+        if (CONFIG.DEMO_MODE) {
+          const k = Object.keys(DEMO_DB).find(k => k === vin || (vin.length < 17 && k.endsWith(vin)));
+          return k ? DEMO_DB[k] : null;
+        }
+        // TODO: const r = await fetch(CONFIG.API_BASE+'/cars/'+encodeURIComponent(vin)); return r.ok ? await r.json() : null;
+        return null;
+      },
+      async confirmMatch(rec) { console.log('confirmMatch', rec); /* TODO: POST /scans */ },
+      async reportDiscrepancy(rec) { console.log('reportDiscrepancy', rec); /* TODO: POST /discrepancies */ },
+      async printSticker(rec) { console.log('print', rec); },
+      async attachPhoto(rec) { console.log('photo', rec); },
+      async slotLog(rec) { console.log('slotLog', rec); },
+    };
+
+    /* =====================================================================
+       2. ИКОНКИ, УТИЛИТЫ, НАВИГАЦИЯ
+       ===================================================================== */
+    const ICONS = {
+      car: '<path d="M5 17h14M3 13l2-6h14l2 6v4H3zM7 17v2M17 17v2"/>',
+      bell: '<path d="M6 8a6 6 0 1112 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 004 0"/>',
+      swap: '<path d="M4 8h14l-4-4M20 16H6l4 4"/>',
+      torch: '<path d="M8 3h8l-1 6H9zM9 9v4l-1 2h8l-1-2V9M12 15v6"/>',
+      invert: '<circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 000-18z" fill="currentColor"/>',
+      kbd: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+      check: '<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',
+      shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+      warn: '<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/>',
+      pin: '<path d="M12 21s7-6 7-12a7 7 0 10-14 0c0 6 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+      box: '<path d="M3 7h18v4H3zM5 11v9h14v-9M10 15h4"/>',
+      print: '<path d="M7 9V4h10v5M7 17H4v-7h16v7h-3M7 14h10v6H7z"/>',
+      cam: '<path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/>',
+      hist: '<path d="M4 12a8 8 0 108-8 8 8 0 00-6 3M4 4v4h4M12 8v5l3 2"/>',
+      warehouse: '<path d="M3 10l9-6 9 6v10H3zM8 20v-6h8v6"/>',
+      vin: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M7 8v8M10 8v8M13 8v8M17 8v8"/>',
+      revision: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11l2 2 4-4M9 17h6"/>',
+      journal: '<path d="M5 4h12a2 2 0 012 2v14H7a2 2 0 01-2-2zM9 9h6M9 13h6"/>',
+      user: '<rect x="4" y="4" width="16" height="17" rx="2"/><circle cx="12" cy="11" r="2.5"/><path d="M8 18c0-2 2-3 4-3s4 1 4 3"/>'
+    };
+    const svg = n => `<svg viewBox="0 0 24 24">${ICONS[n] || ''}</svg>`;
+    document.querySelectorAll('[data-i]').forEach(el => el.innerHTML = svg(el.dataset.i));
+    const $ = s => document.querySelector(s);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('show'), 2200); }
+
+    const NAV = [{ id: 'stock', l: 'Склад', i: 'warehouse' }, { id: 'scan', l: 'VIN скан', i: 'vin' }, { id: 'revision', l: 'Ревизия', i: 'revision' }, { id: 'journal', l: 'Журнал', i: 'journal' }, { id: 'profile', l: 'Профиль', i: 'user' }];
+    const S = { mode: 'vin', page: 'scan', sess: { done: 0, total: 0 }, cur: null, t0: 0, takts: [] };
+    function renderNav() {
+      const h = NAV.map(n => `<button class="${S.page === n.id ? 'on' : ''}" data-nav="${n.id}">${svg(n.i)}<span>${n.l}</span></button>`).join('');
+      $('#bottomNav').innerHTML = h; $('#sideNav').innerHTML = h;
+    }
+    function goPage(id) {
+      S.page = id; renderNav();
+      const scan = id === 'scan';
+      $('#scanView').style.display = scan ? '' : 'none';
+      $('#stub').style.display = scan ? 'none' : 'block';
+      if (!scan) $('#stubT').textContent = NAV.find(n => n.id === id).l;
+      scan ? Scanner.start() : Scanner.stop();
+    }
+    document.addEventListener('click', e => { const n = e.target.closest('[data-nav]'); if (n) goPage(n.dataset.nav); });
+
+    /* =====================================================================
+       3. VIN: проверка и разбор
+       ===================================================================== */
+    const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/;
+    const TR = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8, J: 1, K: 2, L: 3, M: 4, N: 5, P: 7, R: 9, S: 2, T: 3, U: 4, V: 5, W: 6, X: 7, Y: 8, Z: 9 };
+    const WT = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
+    function checksumOk(v) {
+      let s = 0; for (let i = 0; i < 17; i++) { const c = v[i]; s += (/\d/.test(c) ? +c : TR[c]) * WT[i]; }
+      const r = s % 11; return v[8] === (r === 10 ? 'X' : String(r));
+    }
+    /* приводит прочитанный текст к VIN или null. Code39 часто даёт «I»/«*» в начале */
+    function normVin(raw) {
+      let t = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (t.length === 18 && (t[0] === 'I' || t[0] === '1')) t = t.slice(1);
+      if (t.length > 17) { const m = t.match(/[A-HJ-NPR-Z0-9]{17}/); t = m ? m[0] : t; }
+      return VIN_RE.test(t) ? t : null;
+    }
+
+    /* =====================================================================
+       4. СКАНЕР КАМЕРЫ
+       BarcodeDetector (Chrome/Android) → запасной ZXing (iPhone/Safari)
+       ===================================================================== */
+    const Scanner = (() => {
+      const video = $('#video'), cam = $('#cam'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+      let stream = null, track = null, det = null, zx = null, running = false, loopId = 0, inverted = false, torchOn = false, lastV = '', hits = 0, paused = false, lastTick = 0;
+
+      async function initDecoders() {
+        if (!det && 'BarcodeDetector' in window) {
+          try {
+            const want = ['code_39', 'code_128', 'data_matrix', 'qr_code', 'pdf417'];
+            const sup = await BarcodeDetector.getSupportedFormats();
+            const f = want.filter(x => sup.includes(x));
+            if (f.length) det = new BarcodeDetector({ formats: f });
+          } catch (e) { }
+        }
+        if (!det && !zx && window.ZXing) {
+          const h = new Map(); const F = ZXing.BarcodeFormat;
+          h.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [F.CODE_39, F.CODE_128, F.DATA_MATRIX, F.QR_CODE, F.PDF_417]);
+          h.set(ZXing.DecodeHintType.TRY_HARDER, true);
+          zx = new ZXing.MultiFormatReader(); zx.setHints(h);
+        }
+      }
+      async function start() {
+        if (running) return;
+        if (!navigator.mediaDevices?.getUserMedia) return fail('Камера недоступна. Откройте страницу по HTTPS (GitHub Pages) в Chrome или Safari.');
+        try {
+          await initDecoders();
+          stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } });
+          video.srcObject = stream; await video.play();
+          track = stream.getVideoTracks()[0];
+          const caps = track.getCapabilities ? track.getCapabilities() : {};
+          const adv = []; if (caps.focusMode?.includes('continuous')) adv.push({ focusMode: 'continuous' });
+          if (adv.length) track.applyConstraints({ advanced: adv }).catch(() => { });
+          const st = track.getSettings();
+          $('#hudRes').innerHTML = (Math.round(st.frameRate || 30)) + ' FPS<br>' + (st.height ? st.height + 'P' : 'HDR');
+          $('#hudIso').innerHTML = 'ISO AUTO //<br>' + (st.width ? st.width + '×' + st.height : 'F1.8');
+          $('#camerr').classList.remove('on');
+          running = true; paused = false; resetRead(); loop();
+        } catch (e) {
+          const m = { NotAllowedError: 'Доступ к камере запрещён. Разрешите камеру в настройках браузера и нажмите кнопку.', NotFoundError: 'Камера не найдена.', NotReadableError: 'Камеру использует другое приложение.' }[e.name];
+          fail(m || ('Ошибка камеры: ' + e.message));
+        }
+      }
+      function fail(t) { $('#camerrTxt').textContent = t; $('#camerr').classList.add('on'); }
+      function stop() {
+        running = false; cancelAnimationFrame(loopId);
+        if (stream) stream.getTracks().forEach(t => t.stop()); stream = track = null; torchOn = false;
+      }
+      function resetRead() { lastV = ''; hits = 0; S.t0 = performance.now(); cam.classList.remove('locked'); $('#lockl').textContent = 'ПОИСК: 0/17 CHARS'; }
+      function pause() { paused = true; } function resume() { paused = false; resetRead(); }
+
+      async function decodeFrame() {
+        const vw = video.videoWidth, vh = video.videoHeight; if (!vw) return null;
+        /* вырезаем центральную область рамки, чтобы быстрее и точнее */
+        const sx = vw * .04, sy = vh * .14, sw = vw * .92, sh = vh * .72, sc = Math.min(1, 1600 / sw);
+        cv.width = Math.round(sw * sc); cv.height = Math.round(sh * sc);
+        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+        if (inverted) { const d = ctx.getImageData(0, 0, cv.width, cv.height), p = d.data; for (let i = 0; i < p.length; i += 4) { p[i] = 255 - p[i]; p[i + 1] = 255 - p[i + 1]; p[i + 2] = 255 - p[i + 2]; } ctx.putImageData(d, 0, 0); }
+        if (det) { try { const r = await det.detect(cv); for (const b of r) { const v = normVin(b.rawValue); if (v) return v; } const t = r[0]?.rawValue; if (t) showPartial(t); } catch (e) { } return null; }
+        if (zx) { try { const src = new ZXing.HTMLCanvasElementLuminanceSource(cv); const res = zx.decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(src))); const v = normVin(res.getText()); if (!v) showPartial(res.getText()); return v; } catch (e) { return null; } }
+        return null;
+      }
+      function showPartial(t) { const n = String(t).replace(/[^A-Z0-9]/gi, '').length; $('#lockl').textContent = 'ПОИСК: ' + Math.min(n, 17) + '/17 CHARS'; }
+
+      async function loop(ts = 0) {
+        if (!running) return;
+        loopId = requestAnimationFrame(loop);
+        if (paused || ts - lastTick < 90 || loop.busy) return;
+        lastTick = ts; loop.busy = true;
+        try {
+          if (S.mode === 'part') { await partTick(); return; }
+          const v = await decodeFrame();
+          if (v) {
+            hits = v === lastV ? hits + 1 : 1; lastV = v;
+            if (checksumOk(v) || hits >= 2) { onLock(v); }
+          }
+        } finally { loop.busy = false; }
+      }
+      function onLock(v) {
+        paused = true; cam.classList.add('locked'); $('#lockl').textContent = 'LOCKED: 17/17 CHARS';
+        if (navigator.vibrate) navigator.vibrate(60);
+        beep(); handleVin(v, (performance.now() - S.t0) / 1000);
+      }
+      function beep() { try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 1500; g.gain.value = .08; o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + .09); } catch (e) { } }
+      async function torch() {
+        const caps = track?.getCapabilities?.() || {};
+        if (!caps.torch) return toast('Подсветка не поддерживается этим устройством');
+        torchOn = !torchOn; try { await track.applyConstraints({ advanced: [{ torch: torchOn }] }); $('#btnTorch').classList.toggle('on', torchOn); } catch (e) { toast('Не удалось включить подсветку'); }
+      }
+      function invert() { inverted = !inverted; $('#btnInv').classList.toggle('on', inverted); cam.classList.toggle('inv', inverted); }
+      document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else if (S.page === 'scan') start(); });
+      function grab() {
+        const vw = video.videoWidth, vh = video.videoHeight; if (!vw) return null;
+        const side = vh * .72, c = document.createElement('canvas'); c.width = c.height = 224;
+        c.getContext('2d').drawImage(video, (vw - side) / 2, vh * .14, side, side, 0, 0, 224, 224); return c;
+      }
+      return { start, stop, pause, resume, torch, invert, grab };
+    })();
+
+    /* =====================================================================
+       5. РЕЗУЛЬТАТ
+       ===================================================================== */
+    function renderEmpty() {
+      if (S.mode === 'part') return renderPartIdle();
+      $('#res').innerHTML = `<div class="rhead"><span>${svg('vin')}НАВЕДИТЕ КАМЕРУ НА VIN</span></div>
+  <div class="rbody"><div class="seg-h"><span>СЕГМЕНТ: WMI / VDS / VIS</span></div><div class="vinbar empty">ОЖИДАНИЕ СКАНИРОВАНИЯ…</div></div>`;
+      $('#btnOk').disabled = $('#btnBad').disabled = true;
+    }
+    async function handleVin(vin, secs) {
+      const car = await api.lookupVin(vin);
+      S.cur = { vin, car, secs };
+      const cs = checksumOk(vin), found = !!car;
+      const seg = `<span>${vin.slice(0, 3)}</span><em>|</em><span>${vin.slice(3, 9)}</span><em>|</em><span>${vin.slice(9)}</span>`;
+      let h = `<div class="rhead"><span>${svg('check')}ЗАХВАЧЕН VIN-КОД ЗА ${secs.toFixed(2)} СЕК</span><span class="pill ${found ? '' : 'warn'}">${found ? 'РАСПОЗНАНО 100%' : 'НЕТ В БАЗЕ'}</span></div>
+  <div class="rbody"><div class="seg-h"><span>СЕГМЕНТ: WMI / VDS / VIS</span><b class="${cs ? '' : 'na'}">${svg('check')}CHECKSUM ${cs ? 'VALID: OK' : 'N/A (не США)'}</b></div>
+  <div class="vinbar">${seg}</div>`;
+      if (found) {
+        const c = car;
+        h += `<div class="carrow"><div class="ph" ${c.photo ? `style="background-image:url('${esc(c.photo)}')"` : ''}>${c.photo ? '' : svg('car')}<b>${esc(c.year)} МГ</b></div>
+    <div style="min-width:0"><h3>${esc(c.model)}</h3><p>${esc(c.spec || '')}</p><div class="col">◯ ${esc(c.colorCode || '')} ${esc(c.color || '')}</div></div></div>
+    <div class="two"><div class="box"><small>ОЖИДАЕМЫЙ СЛОТ ${svg('pin')}</small><div class="slot">Сектор ${esc(c.sector)}</div><p>${esc(c.zone || '')}</p></div>
+    <div class="box"><small>СТАТУС 1С / DMS <span class="tagd">${esc(c.status || '')}</span></small><div class="dkp">${esc(c.dkp || '')}${c.paid ? ' // ОПЛАЧЕН' : ''}</div><p>${c.client ? 'Клиент: ' + esc(c.client) : ''}</p></div></div>
+    ${c.note ? `<div class="info">${svg('box')}<div>${esc(c.note)}</div></div>` : ''}`;
+        $('#okTxt').innerHTML = `Подтвердить совпадение<br>(слот ${esc(c.sector)})`;
+      } else {
+        h += `<div class="info" style="margin-top:16px">${svg('warn')}<div>VIN считан, но в базе не найден. Подключите базу данных или зафиксируйте расхождение.</div></div>`;
+        $('#okTxt').textContent = 'Принять без базы';
+      }
+      $('#res').innerHTML = h + '</div>';
+      $('#btnOk').disabled = $('#btnBad').disabled = false;
+      $('#res').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function nextScan() {
+      S.cur = null; renderEmpty(); Scanner.resume();
+    }
+    async function confirm() {
+      if (!S.cur) return;
+      if (S.cur.kind === 'part') return confirmPart();
+      await api.confirmMatch({ vin: S.cur.vin, slot: S.cur.car?.sector || null, ts: Date.now(), secs: S.cur.secs });
+      S.sess.done++; S.takts.push(S.cur.secs); updateSession(); toast('Подтверждено: …' + S.cur.vin.slice(-7)); nextScan();
+    }
+    async function discrepancy() {
+      if (!S.cur) return;
+      if (S.cur.kind === 'part') return reportPart();
+      await api.reportDiscrepancy({ vin: S.cur.vin, expectedSlot: S.cur.car?.sector || null, ts: Date.now() });
+      toast('Расхождение записано: …' + S.cur.vin.slice(-7));
+      const v = S.cur.vin; setTimeout(() => location.href = 'revisy.html?vin=' + encodeURIComponent(v), 500);
+    }
+    $('#btnOk').addEventListener('click', confirm);
+    $('#btnBad').addEventListener('click', discrepancy);
+    document.addEventListener('keydown', e => { if (e.key === 'Enter' && S.page === 'scan' && !$('#modal').classList.contains('open') && S.cur) { e.preventDefault(); confirm(); } });
+    $('#lPrint').addEventListener('click', () => S.cur ? api.printSticker(S.cur) : toast('Сначала отсканируйте VIN'));
+    $('#lPhoto').addEventListener('click', () => S.cur ? api.attachPhoto(S.cur) : toast('Сначала отсканируйте VIN'));
+    $('#lLog').addEventListener('click', () => S.cur ? api.slotLog(S.cur) : toast('Сначала отсканируйте VIN'));
+    $('#btnTorch').addEventListener('click', () => Scanner.torch());
+    $('#btnInv').addEventListener('click', () => Scanner.invert());
+    $('#camRetry').addEventListener('click', () => Scanner.start());
+
+    /* ручной ввод */
+    const modal = $('#modal'), manIn = $('#manIn');
+    $('#btnManual').addEventListener('click', () => { Scanner.pause(); modal.classList.add('open'); manIn.value = ''; setTimeout(() => manIn.focus(), 50); });
+    const closeMan = () => { modal.classList.remove('open'); if (!S.cur) Scanner.resume(); };
+    $('#manCancel').addEventListener('click', closeMan);
+    modal.addEventListener('click', e => { if (e.target === modal) closeMan(); });
+    async function manual() {
+      const t = manIn.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, ''); if (!t) return;
+      modal.classList.remove('open');
+      if (t.length === 17) { if (!VIN_RE.test(t)) { toast('Неверный VIN: буквы I, O, Q не используются'); Scanner.resume(); return; } handleVin(t, 0); return; }
+      const car = await api.lookupVin(t);
+      if (car) handleVin(car.vin, 0); else { toast('Не найдено: ' + t); Scanner.resume(); }
+    }
+    $('#manOk').addEventListener('click', manual);
+    manIn.addEventListener('keydown', e => { if (e.key === 'Enter') manual(); });
+
+    /* =====================================================================
+       5b. РЕЖИМ «ДЕТАЛЬ (ИИ)»
+       Эталоны: 1–3 снимка детали → вектор признаков (MobileNet в браузере, без сервера).
+       Узнавание: сравнение кадра с эталонами. Сверка с накладной.
+       Хранилище сейчас — localStorage; для Firebase/Cloudinary см. TODO в api.*
+       ===================================================================== */
+    const PCFG = { THRESH: .80, MARGIN: .03, STABLE: 3, EVERY: 450 };
+    /* Формат детали: {id,name,partNumber,thumb(photoUrl из Cloudinary),embs:[[1280 чисел],...]} → коллекция Firestore «parts» */
+    const ls = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { toast('Хранилище заполнено'); } } };
+    api.listParts = async () => { if (CONFIG.DEMO_MODE) return ls.get('parts', []); /* TODO: getDocs(collection(db,'parts')) */ return []; };
+    const CLOUD = { name: 'cimqvxxi', preset: 'ml_default' };
+    async function uploadPhoto(dataUrl, p) {
+      const cx = t => String(t || '').replace(/[=|]/g, ' ');
+      const fd = new FormData();
+      fd.append('file', dataUrl); fd.append('upload_preset', CLOUD.preset);
+      fd.append('tags', 'tutorapp,part'); fd.append('context', 'name=' + cx(p.name) + '|partNumber=' + cx(p.partNumber));
+      const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD.name}/image/upload`, { method: 'POST', body: fd });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error?.message || ('HTTP ' + r.status));
+      return j.secure_url;
+    }
+    api.savePart = async p => {
+      try { if (p.thumb && p.thumb.startsWith('data:')) p.thumb = await uploadPhoto(p.thumb, p); }
+      catch (e) { console.warn('Cloudinary:', e); toast('Cloudinary: ' + e.message); }
+      const a = ls.get('parts', []); a.push(p); ls.set('parts', a); /* TODO: setDoc(doc(db,'parts',p.id),p) + загрузка фото в Cloudinary */
+    };
+    api.getOrder = async () => ls.get('order', { no: 'ПН-0412', items: {} });   /* TODO: накладная из Firestore: {no, items:{partId:{need,got}}} */
+    api.saveOrder = async o => ls.set('order', o);
+    api.logPart = async r => { console.log('logPart', r); /* TODO: addDoc(collection(db,'partScans'),r) */ };
+
+    let tfModel = null, tfLoad = null, pParts = null, pOrder = null, pHist = [], pLast = 0, shots = [], thumb = '';
+    const loadJs = src => new Promise((ok, no) => { const e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = () => no(new Error(src)); document.head.appendChild(e); });
+    function loadTF() {
+      return tfLoad || (tfLoad = (async () => {
+        await loadJs('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js');
+        await loadJs('https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js');
+        tfModel = await mobilenet.load({ version: 2, alpha: 1.0 }); return tfModel;
+      })().catch(e => { tfLoad = null; throw e; }));
+    }
+    function embed(c) {
+      const t = tfModel.infer(c, true), a = Array.from(t.dataSync()); t.dispose();
+      const n = Math.sqrt(a.reduce((s, x) => s + x * x, 0)) || 1; return a.map(x => x / n);
+    }
+    const dot = (a, b) => { let s = 0; for (let i = 0; i < a.length; i++)s += a[i] * b[i]; return s; };
+    function matchPart(e) {
+      const r = pParts.map(p => ({ p, sim: Math.max(...p.embs.map(x => dot(e, x))) })).sort((a, b) => b.sim - a.sim);
+      const best = r[0], second = r[1]; const ok = best.sim >= PCFG.THRESH && (!second || best.sim - second.sim >= PCFG.MARGIN);
+      return { best, ok };
+    }
+    async function reloadParts() { pParts = await api.listParts(); pOrder = await api.getOrder(); }
+    function chkHtml() {
+      const ids = Object.keys(pOrder?.items || {}); if (!ids.length) return '';
+      const done = ids.filter(id => pOrder.items[id].got >= pOrder.items[id].need).length;
+      return `<div class="chk"><h4><span>НАКЛАДНАЯ ${esc(pOrder.no)}</span><span>${done} / ${ids.length}</span></h4>` + ids.map(id => {
+        const it = pOrder.items[id], p = pParts.find(x => x.id === id), ok = it.got >= it.need;
+        return `<div class="it ${ok ? 'done' : ''}"><span>${ok ? '✓ ' : ''}${esc(p ? p.name : id)}</span><em>${it.got} / ${it.need}</em></div>`;
+      }).join('') + '</div>';
+    }
+    async function renderPartIdle() {
+      if (!pParts) await reloadParts();
+      $('#res').innerHTML = `<div class="rhead"><span>${svg('box')}НАВЕДИТЕ КАМЕРУ НА ДЕТАЛЬ</span><span class="pill warn">${pParts.length} ЭТАЛОНОВ</span></div>
+  <div class="rbody"><div class="vinbar empty">${pParts.length ? 'ОЖИДАНИЕ ДЕТАЛИ…' : 'СНАЧАЛА НАЖМИТЕ «ОБУЧИТЬ ДЕТАЛЬ»'}</div>${chkHtml()}</div>`;
+      $('#btnOk').disabled = $('#btnBad').disabled = true;
+    }
+    async function partTick() {
+      const now = performance.now(); if (now - pLast < PCFG.EVERY) return; pLast = now;
+      const lk = $('#lockl');
+      if (!tfModel) { lk.textContent = 'ЗАГРУЗКА ИИ-МОДЕЛИ…'; try { await loadTF(); } catch (e) { lk.textContent = 'ИИ НЕДОСТУПЕН: НЕТ СЕТИ'; return; } }
+      if (!pParts) await reloadParts();
+      if (!pParts.length) { lk.textContent = 'НЕТ ЭТАЛОНОВ'; return; }
+      const c = Scanner.grab(); if (!c || S.mode !== 'part') return;
+      const { best, ok } = matchPart(embed(c));
+      lk.textContent = best.sim > .6 ? `${best.p.name.toUpperCase()} ~ ${Math.round(best.sim * 100)}%` : 'ПОИСК ДЕТАЛИ…';
+      pHist.push(ok ? best.p.id : null); pHist = pHist.slice(-PCFG.STABLE);
+      if (pHist.length === PCFG.STABLE && pHist.every(x => x === best.p.id) && ok) lockPart(best.p, best.sim);
+    }
+    function lockPart(p, sim) {
+      Scanner.pause(); $('#cam').classList.add('locked'); if (navigator.vibrate) navigator.vibrate(60);
+      const secs = (performance.now() - S.t0) / 1000, it = pOrder.items[p.id];
+      S.cur = { kind: 'part', part: p, sim, secs };
+      const stat = it ? (it.got >= it.need ? ['ПРИНЯТО ПОЛНОСТЬЮ', it.got + ' из ' + it.need, '#1f8a4c'] : ['ЖДЁТ ПРИЁМКИ', it.got + ' из ' + it.need + ' шт.', '#2f63d1']) : ['НЕТ В НАКЛАДНОЙ', 'Лишняя деталь', '#c62828'];
+      $('#res').innerHTML = `<div class="rhead"><span>${svg('check')}ДЕТАЛЬ УЗНАНА ЗА ${secs.toFixed(2)} СЕК</span><span class="pill">СХОДСТВО ${Math.round(sim * 100)}%</span></div>
+  <div class="rbody"><div class="carrow" style="margin-top:0"><div class="ph" style="background-image:url('${p.thumb || ''}')"></div>
+  <div style="min-width:0"><h3>${esc(p.name)}</h3><p>Артикул: ${esc(p.partNumber || '—')}</p></div></div>
+  <div class="two"><div class="box"><small>НАКЛАДНАЯ ${svg('box')}</small><div class="slot" style="color:${stat[2]};font-size:22px">${stat[0]}</div><p>${esc(stat[1])}</p></div>
+  <div class="box"><small>ТОЧНОСТЬ ${svg('shield')}</small><div class="slot" style="font-size:30px">${Math.round(sim * 100)}%</div><p>порог ${Math.round(PCFG.THRESH * 100)}%</p></div></div>${chkHtml()}</div>`;
+      $('#okTxt').textContent = 'Принять деталь'; $('#btnOk').disabled = $('#btnBad').disabled = false;
+    }
+    async function confirmPart() {
+      const { part, sim, secs } = S.cur, it = pOrder.items[part.id]; let msg = 'Принято: ' + part.name;
+      if (it) it.got++; else msg = '⚠ Нет в накладной: ' + part.name;
+      await api.saveOrder(pOrder); await api.logPart({ partId: part.id, partNumber: part.partNumber, sim, secs, inOrder: !!it, ts: Date.now(), action: 'accept' });
+      toast(msg); pHist = []; nextScan();
+    }
+    async function reportPart() {
+      const { part, sim } = S.cur; await api.logPart({ partId: part.id, partNumber: part.partNumber, sim, ts: Date.now(), action: 'discrepancy' });
+      toast('Расхождение записано: ' + part.name); pHist = []; nextScan();
+    }
+    /* обучение детали */
+    function renderTeach() {
+      shots = []; thumb = ''; Scanner.pause();
+      $('#res').innerHTML = `<div class="rhead"><span>${svg('cam')}ОБУЧЕНИЕ: НОВАЯ ДЕТАЛЬ</span></div><div class="rbody tf">
+  <label>Название</label><input type="text" id="tName" placeholder="Тормозной диск передний">
+  <label>Артикул / ID</label><input type="text" id="tNum" placeholder="34116797603">
+  <div class="row"><input type="checkbox" id="tOrd" checked><label style="margin:0">В накладную, шт.:</label><input type="number" id="tQty" value="1" min="1"></div>
+  <div class="shots" id="tShots"></div>
+  <button class="tbtn" id="tShot">Снять кадр (0 / 3)</button>
+  <button class="tbtn" id="tSave" disabled>Сохранить деталь</button>
+  <button class="tbtn g" id="tCancel">Отмена</button>
+  <p style="font-size:12px;color:var(--muted);margin-top:10px">Положите деталь в рамку и снимите 2–3 кадра с разных сторон.</p></div>`;
+      $('#btnOk').disabled = $('#btnBad').disabled = true;
+      $('#tShot').onclick = async () => {
+        if (!tfModel) { toast('Загрузка ИИ-модели…'); try { await loadTF(); } catch (e) { return toast('Нет сети для ИИ-модели'); } }
+        const c = Scanner.grab(); if (!c) return toast('Камера не готова');
+        shots.push(embed(c).map(x => +x.toFixed(4))); const u = c.toDataURL('image/jpeg', .6); if (!thumb) thumb = u;
+        $('#tShots').insertAdjacentHTML('beforeend', `<i style="background-image:url('${u}')"></i>`);
+        $('#tShot').textContent = `Снять кадр (${shots.length} / 3)`; $('#tSave').disabled = false; if (shots.length >= 3) $('#tShot').disabled = true;
+      };
+      $('#tSave').onclick = async () => {
+        const name = $('#tName').value.trim(); if (!name) return toast('Укажите название');
+        const p = { id: 'p' + Date.now().toString(36), name, partNumber: $('#tNum').value.trim(), thumb, embs: shots };
+        await api.savePart(p);
+        if ($('#tOrd').checked) { pOrder = await api.getOrder(); pOrder.items[p.id] = { need: Math.max(1, +$('#tQty').value || 1), got: 0 }; await api.saveOrder(pOrder); }
+        pParts = null; toast('Деталь сохранена'); pHist = []; nextScan();
+      };
+      $('#tCancel').onclick = () => { nextScan(); };
+    }
+    $('#btnTeach').addEventListener('click', renderTeach);
+    function setMode(m) {
+      S.mode = m; S.cur = null; pHist = [];
+      document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === m));
+      const part = m === 'part';
+      $('#btnTeach').style.display = part ? '' : 'none'; $('#btnManual').style.display = $('#btnInv').style.display = part ? 'none' : '';
+      document.querySelector('.hud .mid').innerHTML = part ? 'ИИ-РАСПОЗНАВАНИЕ<br>ДЕТАЛЕЙ' : 'АВТО-ЗАХВАТ: ШТРИХ +<br>ГРАВИРОВКА';
+      $('#okTxt').textContent = 'Подтвердить совпадение';
+      renderEmpty(); Scanner.resume(); if (part) $('#lockl').textContent = 'ПОИСК ДЕТАЛИ…';
+      if (part) loadTF().catch(() => { });
+    }
+    $('#modes').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== S.mode) setMode(b.dataset.mode); });
+
+    /* =====================================================================
+       6. СЕССИЯ И ЗАПУСК
+       ===================================================================== */
+    function updateSession() {
+      const { done, total } = S.sess;
+      $('#progTxt').textContent = done + ' / ' + total + ' АВТО';
+      $('#progBar').style.width = total ? Math.min(100, done / total * 100) + '%' : '0';
+      const avg = S.takts.length ? S.takts.reduce((a, b) => a + b, 0) / S.takts.length : null;
+      if (avg !== null) $('#takt').textContent = avg.toFixed(2) + 's / VIN';
+    }
+    async function init() {
+      const s = await api.getSession();
+      $('#userName').textContent = s.user || '—'; $('#userRole').textContent = s.role || '';
+      $('#brandSub').textContent = (s.dealer || '') + ' // ' + (s.brands || '');
+      $('#sideDealer').textContent = s.dealer || '';
+      $('#sessName').textContent = s.sessionName || 'СЕССИЯ';
+      $('#conv').textContent = s.convergence != null ? s.convergence + '%' : '—';
+      $('#sectRange').textContent = s.sectors || '—';
+      $('#takt').textContent = CONFIG.DEMO_MODE ? '0.18s / VIN' : '—';
+      S.sess = { done: s.done || 0, total: s.total || 0 }; updateSession();
+    }
+    $('#btnSync').addEventListener('click', init);
+    renderNav(); renderEmpty(); init(); Scanner.start();
+  </script>
+  <script src="nav.js"></script>
+</body>
+
+</html>
